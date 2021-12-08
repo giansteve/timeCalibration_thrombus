@@ -27,6 +27,11 @@ uqlab
 % addpath('M:\IFM\User\melito\Server\Projects\matlab_funct')
 
 %% Dealing with Experimental Data
+% ===============================SOURCE===================================
+% Taylor, Joshua O. et al. "Development of a computational model for 
+% macroscopic predictions of device-induced thrombosis", J. Biomechanics
+% and Modeling in Mechanobiology, 2016
+% ========================================================================
 % Human thrombus in real-time
 human_thr.time = xlsread('MRIdata.xlsx',1,'B20:B26');                       % time
 human_thr.volume = xlsread('MRIdata.xlsx',1,'C20:C26');                     % thrombus volume
@@ -73,6 +78,19 @@ human_thr.growthRate.L_S = diff(fittedData.L_S)/(deltaT);           % 1/min
 human_thr.growthRate.volume = diff(fittedData.Vol)/(deltaT);        % m^3/min
 human_thr.growthRate.exposedArea = diff(fittedData.SA)/(deltaT);    % m^2/min
 
+%% plot fitting MRI
+folderPath = 'TimeCal_MRIdata';
+cd(root_destination)
+try
+    dest_plot = sprintf('Plot\\%s',folderPath);
+    cd(dest_plot)
+catch
+    mkdir(dest_plot)
+    cd(dest_plot)
+end
+timeCal_plotFittingMRI(fittedData,human_thr,'MRI_fitting')
+cd(root_destination)
+
 %% Define Input variables names
 var_names = {'${D}_{\mathrm{c}}$','${k}_{\mathrm{c}}$','${k}_{\mathrm{{BP}}}$','${c}_{\mathrm{t}}$',...
     '${c}_{\mathrm{{BPt}}}$','$\overline{T}_{\mathrm{Rt}}$','${k}_{\mathrm{{c,wall}}}$',...
@@ -84,8 +102,50 @@ load('timeCal_00input_2000sims_4Feb21.mat',myVars{:})
 Ns = size(exp_design,1);
 M = size(exp_design,2);
 
-%% Load output
+%% Load output: H/S and L/S
 load('TimeCal_OUTPUT.mat')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
