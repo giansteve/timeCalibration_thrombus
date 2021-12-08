@@ -20,7 +20,7 @@
 %% ===================================================================
 % load('RawOutput_23Feb21_1304.mat')
 OUT_time = outToPCE.time(:,1);
-OUT_HS = outToPCE.H_S(:);
-OUT_LS = outToPCE.L_S(:);
+OUT_HS = outToPCE.H_S;
+OUT_LS = outToPCE.L_S;
 save('TimeCal_OUTPUT.mat')
 %% ===================================================================

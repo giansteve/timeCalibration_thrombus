@@ -104,6 +104,39 @@ M = size(exp_design,2);
 
 %% Load output: H/S and L/S
 load('TimeCal_OUTPUT.mat')
+% delete crushed sim from the input
+exp_design(crushed_sim_idx,:) = [];
+
+%% Statistics on the input
+fprintf('Get statistics INPUT ... \n')
+cd(root_destination)
+try
+    dest_plot = sprintf('Plot\\StatsInput');
+    cd(dest_plot)
+catch
+    mkdir(dest_plot)
+    cd(dest_plot)
+end
+figure('Visible','off')
+plotmatrix(exp_design)
+GM_printBMP(600,600,'InputStats')
+GM_printEPS(600,600,'InputStats')
+close all
+cd(root_destination)
+
+%% Statistics on the output
+fprintf('Get statistics OUTPUT ... \n')
+cd(root_destination)
+try
+    dest_plot = sprintf('Plot\\StatsOutput');
+    cd(dest_plot)
+catch
+    mkdir(dest_plot)
+    cd(dest_plot)
+end
+timeCal_statisticsOutput(OUT_HS,OUT_LS,OUT_time,fittedData);
+% scatter plot input VS likelihood
+cd(root_destination)
 
 
 

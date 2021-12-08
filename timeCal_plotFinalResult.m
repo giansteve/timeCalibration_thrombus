@@ -1,4 +1,4 @@
-function [] = timeCal_plotFinalResult(output_matrix,fittedData)
+function [] = timeCal_plotFinalResult(OUT_HS,OUT_LS,OUT_time,fittedData)
 % plot the probability distribution of the results from the model
 % simulations at the end of the simulation and compare them with the MRI
 % measurements
@@ -6,19 +6,19 @@ function [] = timeCal_plotFinalResult(output_matrix,fittedData)
 
 figure('Visible','off')
 subplot(121) % H/S
-histogram(output_matrix.H_S_model(end,:),'FaceColor','r','Normalization','probability')
+histogram(OUT_HS(end,:),'FaceColor','r','Normalization','probability')
 hold on
-xline(fittedData(end,2),'k');
-xlim([0.5 1]);
+xline(fittedData.H_S(end),'k','LineWidth',3);
+% xlim([0.5 1]);
 grid on
-legend('H/S','MRI','Location','nw')
+legend('$H/S$','MRI','Location','nw')
 
-subplot(122) % l/S
-histogram(output_matrix.L_S_model(end,:),'FaceColor','b','Normalization','probability')
+subplot(122) % L/S
+histogram(OUT_LS(end,:),'FaceColor','b','Normalization','probability')
 hold on
-xline(fittedData(end,3),'k');
+xline(fittedData.L_S(end),'k','LineWidth',3);
 grid on
-legend('L/S','MRI','Location','nw')
+legend('$L/S$','MRI','Location','ne')
 
 % subplot(223) % SA
 % histogram(output_matrix.SA_model(end,:),'FaceColor','g','Normalization','probability')
