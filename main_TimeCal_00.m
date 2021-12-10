@@ -201,14 +201,5 @@ GM_printEPS(400,400,'ModOut_SurrOut_prob')
 close
 cd(root_destination)
 
-%% Residuals MRI (fitted data) and MODEL
-% static residuals: only at the data points
-% static_time_index = (1:10:61);
-% ns = size(human_thr.H_S,1); % size of the residual points
-% r_s_HS = (1/sqrt(ns)).*( OUT_HS(static_time_index,:) - human_thr.H_S(:,1) )./human_thr.H_S(:,1);
-% r_s_HS(1,:) = 0; % imposing first time instance with 0 discrepancy = 0/0 -> NaN
-% % dynamic residuals: for the whole process of thrombus formation
-% r_d_HS = (1/sqrt(size(fittedData.H_S,2))).*( OUT_HS - fittedData.H_S' )./fittedData.H_S';
-% r_d_HS(1,:) = 0; % imposing first time instance with 0 discrepancy = 0/0 -> NaN
-
+%% Comparison MRI - model
 
