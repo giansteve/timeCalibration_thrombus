@@ -19,7 +19,7 @@ root_destination = pwd;
 addpath(root_destination)
 
 % initialize UQlab
-uqlab
+% uqlab
 
 % consider adding them in the folder
 % addpath('M:\IFM\User\melito\Server\Projects\matlab_funct\SA')
@@ -99,13 +99,13 @@ var_names = {'${D}_{\mathrm{c}}$','${k}_{\mathrm{c}}$','${k}_{\mathrm{{BP}}}$','
 %% Read input file
 myVars = {'INPUT','exp_design'};
 load('timeCal_00input_2000sims_4Feb21.mat',myVars{:})
-Ns = size(exp_design,1);
-M = size(exp_design,2);
 
 %% Load output: H/S and L/S
 load('TimeCal_OUTPUT.mat')
 % delete crushed sim from the input
 exp_design(crushed_sim_idx,:) = [];
+Ns = size(exp_design,1);
+M = size(exp_design,2);
 
 %% Statistics on the input
 fprintf('Get statistics INPUT ... \n')
@@ -135,10 +135,41 @@ catch
     cd(dest_plot)
 end
 timeCal_statisticsOutput(OUT_HS,OUT_LS,OUT_time,fittedData);
-% scatter plot input VS likelihood
 cd(root_destination)
 
+%% Create metamodel of the thrombus model
+% moving PCE computation to UQ[py]lab
+MRI_time_index = (1:10:61);
+metamodel.Type = 'Metamodel';
+metamodel.MetaType = 'PCE';
+metamodel.Display = 'verbose';
+metamodel.Method = 'lars';
+metamodel.Degree = 3:12;
+metamodel.TruncOptions.qNorm = 0.95;
+metamodel.DegreeEarlyStop = false;
+metamodel.Input = INPUT;
+metamodel.ExpDesign.NSamples = Ns;
+metamodel.ExpDesign.X = exp_design;
+% PCE H/S
+metamodel.ExpDesign.Y = OUT_HS(MRI_time_index,:)';
+PCE_HS = uq_createModel(metamodel);
+% PCE L/S
+metamodel.ExpDesign.Y = OUT_LS(MRI_time_index,:)';
+PCE_LS = uq_createModel(metamodel);
 
+% save PS: remember to create function to save in specific folder with the
+% date :)
+save('TimeCal_postSurrogate_101221')
+
+%% Residuals MRI (fitted data) and MODEL
+% static residuals: only at the data points
+% static_time_index = (1:10:61);
+% ns = size(human_thr.H_S,1); % size of the residual points
+% r_s_HS = (1/sqrt(ns)).*( OUT_HS(static_time_index,:) - human_thr.H_S(:,1) )./human_thr.H_S(:,1);
+% r_s_HS(1,:) = 0; % imposing first time instance with 0 discrepancy = 0/0 -> NaN
+% % dynamic residuals: for the whole process of thrombus formation
+% r_d_HS = (1/sqrt(size(fittedData.H_S,2))).*( OUT_HS - fittedData.H_S' )./fittedData.H_S';
+% r_d_HS(1,:) = 0; % imposing first time instance with 0 discrepancy = 0/0 -> NaN
 
 
 

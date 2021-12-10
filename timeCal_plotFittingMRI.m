@@ -9,7 +9,7 @@ hold on
 plot(human_thr.time,human_thr.H_S(:,1),'r.','MarkerSize',10)
 errorbar(human_thr.time,human_thr.H_S(:,1),human_thr.H_S(:,2),human_thr.H_S(:,2),'LineStyle','none','Marker','none','Color','r')
 ylabel('$H/S$ [-]')
-legend('$H/S$','MRI','$\sigma_{MRI}$','Location','se')
+legend('fit','MRI','$\sigma_{MRI}$','Location','se')
 grid on
 subplot(212)
 hold on
@@ -18,7 +18,7 @@ plot(human_thr.time,human_thr.L_S(:,1),'b.','MarkerSize',10)
 errorbar(human_thr.time,human_thr.L_S(:,1),human_thr.L_S(:,2),human_thr.L_S(:,2),'LineStyle','none','Marker','none','Color','b')
 xlabel('Time [min]')
 ylabel('$L/S$ [-]')
-legend('$L/S$','MRI','$\sigma_{MRI}$','Location','se')
+legend('fit','MRI','$\sigma_{MRI}$','Location','se')
 grid on
 
 % subplot(2,1,2)

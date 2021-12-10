@@ -28,7 +28,7 @@ GM_printBMP(300,300,'stats_L_S')
 GM_printEPS(300,300,'stats_L_S')
 
 %% ================== COmmented on 08/12/21
-% %% Difference with MRI data
+%% Difference with MRI data
 % N = 10;
 % diff_signal.H_S = timeCal_modelDataDifference(OUT_time,OUT_HS,fittedData(:,2),'H/S [-]',N);
 % GM_printBMP(300,500,'stats_DifferenceSignals_H_S')

@@ -15,7 +15,6 @@ function [] = timeCal_statisticsOutput(OUT_HS,OUT_LS,OUT_time,fittedData)
 timeCal_statsPlot(OUT_HS,OUT_LS,OUT_time);
 timeCal_plotFinalResult(OUT_HS,OUT_LS,OUT_time,fittedData);
 
-% warning('on','all')
 close all
 end
 
