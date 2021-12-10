@@ -24,3 +24,14 @@ OUT_HS = outToPCE.H_S;
 OUT_LS = outToPCE.L_S;
 save('TimeCal_OUTPUT.mat')
 %% ===================================================================
+for i = 1:size(OUTPUT,2)
+    phic_HS(:,:,i) = OUTPUT(i).H_S.phi_c(1001:end,2:end);
+    phic_LS(:,:,i) = OUTPUT(i).L_S.phi_c(1001:end,2:end);
+end
+save('TimeCal_phic.mat','phic_HS','phic_LS','-v7.3')
+
+
+
+
+
+
