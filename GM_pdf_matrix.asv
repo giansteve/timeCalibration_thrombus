@@ -1,0 +1,42 @@
+function [] = GM_pdf_matrix(mat,dim)
+% generate probability distribution function (pdf) of a matrix. The second
+% dimension is intended as time, therefore the analysis of the PDF is
+% dynamic
+
+% dim = define the time dimension
+%% define colors
+colors = [];
+for i = 1:size(mat,dim)
+    colors = [colors; i/size(mat,dim) i/size(mat,dim) i/size(mat,dim)];
+end
+
+%% define max and min of variable
+N_edges = 100;
+xlimit = [min(min(mat)) max(max(mat))];
+edges_hist = linspace(min(min(mat)),max(max(mat)),N_edges);
+
+if dim == 1
+    figure
+    hold on
+    for i = 1:size(mat,dim)
+        h = histcounts(mat(i,:),edges_hist,'Normalization','probability');
+        plot(diff(edges_hist),h)
+    end
+elseif dim == 2
+    
+else
+    error('No dimension available');
+end
+
+
+
+
+
+
+
+
+
+
+
+
+end
