@@ -28,7 +28,7 @@ addpath(root_destination)
 
 %% Dealing with Experimental Data
 % ===============================SOURCE===================================
-% Taylor, Joshua O. et al. "Development of a computational model for 
+% Taylor, Joshua O. et al. "Development of a computational model for
 % macroscopic predictions of device-induced thrombosis", J. Biomechanics
 % and Modeling in Mechanobiology, 2016
 % ========================================================================
@@ -161,6 +161,46 @@ PCE_LS = uq_createModel(metamodel);
 % date :)
 save('TimeCal_postSurrogate_101221')
 
+%% Surrogate accuracy display
+% generate surrogate evaluations
+exp_design_pce_eval = uq_getSample(INPUT,2000);
+Y_pce_HS = uq_evalModel(PCE_HS,exp_design_pce_eval);
+Y_pce_LS = uq_evalModel(PCE_LS,exp_design_pce_eval);
+% plot
+cd(root_destination)
+try
+    dest_plot = sprintf('Plot\\Surrogate');
+    cd(dest_plot)
+catch
+    mkdir(dest_plot)
+    cd(dest_plot)
+end
+figure('Visible','off')
+subplot(221)
+GM_pdf_matrix(OUT_HS(MRI_time_index,:))
+xlim([0 1])
+ylim([0 .2])
+ylabel('$p$ $(\%)$')
+subplot(222)
+GM_pdf_matrix(OUT_LS(MRI_time_index,:))
+xlim([0 inf])
+ylim([0 .2])
+subplot(223)
+GM_pdf_matrix(Y_pce_HS')
+xlim([0 1])
+ylim([0 .2])
+ylabel('$p$ $(\%)$')
+xlabel('$H/S$ $(-)$')
+subplot(224)
+GM_pdf_matrix(Y_pce_LS')
+xlim([0 inf])
+ylim([0 .2])
+xlabel('$L/S$ $(-)$')
+GM_printBMP(400,400,'ModOut_SurrOut_prob')
+GM_printEPS(400,400,'ModOut_SurrOut_prob')
+close
+cd(root_destination)
+
 %% Residuals MRI (fitted data) and MODEL
 % static residuals: only at the data points
 % static_time_index = (1:10:61);
@@ -170,48 +210,5 @@ save('TimeCal_postSurrogate_101221')
 % % dynamic residuals: for the whole process of thrombus formation
 % r_d_HS = (1/sqrt(size(fittedData.H_S,2))).*( OUT_HS - fittedData.H_S' )./fittedData.H_S';
 % r_d_HS(1,:) = 0; % imposing first time instance with 0 discrepancy = 0/0 -> NaN
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
