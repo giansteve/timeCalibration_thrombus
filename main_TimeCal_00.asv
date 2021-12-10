@@ -21,11 +21,6 @@ addpath(root_destination)
 % initialize UQlab
 % uqlab
 
-% consider adding them in the folder
-% addpath('M:\IFM\User\melito\Server\Projects\matlab_funct\SA')
-% addpath('M:\IFM\User\melito\Server\Projects\matlab_funct\general')
-% addpath('M:\IFM\User\melito\Server\Projects\matlab_funct')
-
 %% Dealing with Experimental Data
 % ===============================SOURCE===================================
 % Taylor, Joshua O. et al. "Development of a computational model for
@@ -163,30 +158,59 @@ save('TimeCal_postSurrogate_101221')
 
 %% Surrogate accuracy display
 % generate surrogate evaluations
-exp_design_pce_eval = uq_getSample(INPUT,4000);
-Y_pce_HS = uq_evalModel(PCE_HS,exp_design);
+exp_design_pce_eval = uq_getSample(INPUT,2000);
+Y_pce_HS = uq_evalModel(PCE_HS,exp_design_pce_eval);
+Y_pce_LS = uq_evalModel(PCE_LS,exp_design_pce_eval);
 % plot
-figure
-for m = 1:M
-    subplot(2,5,m)
-    plot(exp_design(:,m),OUT_HS(end,:),'k.')
-    hold on
-    plot(exp_design(:,m),Y_pce_HS(:,end),'r.')
+cd(root_destination)
+try
+    dest_plot = sprintf('Plot\\Surrogate');
+    cd(dest_plot)
+catch
+    mkdir(dest_plot)
+    cd(dest_plot)
 end
-
-figure
-subplot(2)
+figure('Visible','off')
+subplot(221)
 GM_pdf_matrix(OUT_HS(MRI_time_index,:))
+xlim([0 1])
+ylim([0 .2])
+ylabel('$p$ $(\%)$')
+subplot(222)
+GM_pdf_matrix(OUT_LS(MRI_time_index,:))
+xlim([0 inf])
+ylim([0 .2])
+subplot(223)
+GM_pdf_matrix(Y_pce_HS')
+xlim([0 1])
+ylim([0 .2])
+ylabel('$p$ $(\%)$')
+xlabel('$H/S$ $(-)$')
+subplot(224)
+GM_pdf_matrix(Y_pce_LS')
+xlim([0 inf])
+ylim([0 .2])
+xlabel('$L/S$ $(-)$')
+GM_printBMP(400,400,'ModOut_SurrOut_prob')
+GM_printEPS(400,400,'ModOut_SurrOut_prob')
+close
+cd(root_destination)
+
+%% Comparison MRI - model
+% percent error = (Mod - Data)/|Data| *100
+comp_PE = (Y_pce_HS' - human_thr.H_S(:,1))./abs(human_thr.H_S(:,1));
+comp_PE(1,:)=0; % impose NaN to 0, since first step is equal for both
+figure
+GM_pdf_matrix(comp_PE)
+% comp_PE is bi-modal distributed with negative values. Find transformation!
+% Box-Cox transformation
+lambda = 0;
+comp_PE_transf 
 
 
-%% Residuals MRI (fitted data) and MODEL
-% static residuals: only at the data points
-% static_time_index = (1:10:61);
-% ns = size(human_thr.H_S,1); % size of the residual points
-% r_s_HS = (1/sqrt(ns)).*( OUT_HS(static_time_index,:) - human_thr.H_S(:,1) )./human_thr.H_S(:,1);
-% r_s_HS(1,:) = 0; % imposing first time instance with 0 discrepancy = 0/0 -> NaN
-% % dynamic residuals: for the whole process of thrombus formation
-% r_d_HS = (1/sqrt(size(fittedData.H_S,2))).*( OUT_HS - fittedData.H_S' )./fittedData.H_S';
-% r_d_HS(1,:) = 0; % imposing first time instance with 0 discrepancy = 0/0 -> NaN
+
+
+
+
 
 

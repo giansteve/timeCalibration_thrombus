@@ -21,11 +21,6 @@ addpath(root_destination)
 % initialize UQlab
 % uqlab
 
-% consider adding them in the folder
-% addpath('M:\IFM\User\melito\Server\Projects\matlab_funct\SA')
-% addpath('M:\IFM\User\melito\Server\Projects\matlab_funct\general')
-% addpath('M:\IFM\User\melito\Server\Projects\matlab_funct')
-
 %% Dealing with Experimental Data
 % ===============================SOURCE===================================
 % Taylor, Joshua O. et al. "Development of a computational model for
@@ -202,4 +197,26 @@ close
 cd(root_destination)
 
 %% Comparison MRI - model
+% percent error = abs(Mod - Data)/|Data| *100
+comp_PE = abs(Y_pce_HS' - human_thr.H_S(:,1))./abs(human_thr.H_S(:,1));
+% comp_PE(1,:)=0; % impose NaN to 0, since first step is equal for both
+figure
+GM_pdf_matrix(comp_PE)
+% comp_PE is bi-modal distributed with negative values. Find transformation!
+%% Box-Cox transformation
+lambda = 1/2;
+if lambda == 0
+    comp_PE_transf = log(comp_PE);
+else
+    comp_PE_transf = (comp_PE.^lambda - 1)./(lambda);
+end
+figure
+GM_pdf_matrix(comp_PE_transf)
+
+
+
+
+
+
+
 
