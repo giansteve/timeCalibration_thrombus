@@ -202,4 +202,42 @@ close
 cd(root_destination)
 
 %% Comparison MRI - model
+% residual comp_R = 1/sqrt(N_data) (Mod - data)/(data), where N_data:5patients
+comp_R = (1/sqrt(5)) * ((OUT_HS(MRI_time_index,:)-human_thr.H_S(:,1))./(human_thr.H_S(:,1)));
+comp_R = comp_R(2:end,:);
+figure
+GM_pdf_matrix(comp_R(2:end,:))
+figure
+for i=1:6
+    subplot(6,1,i)
+    histogram(comp_R(i,:))
+end
+%% get one indicator to remove time dependancy of residual
+indicator_R = sum(comp_R(2:end,:));
+figure
+GM_pdf_matrix(indicator_R)
+%% Remove simulations with extreme residuals
+comp_R_accept = comp_R;
+[row,col] = find(comp_R_accept<-.1);
+comp_R_accept(:,col) = [];
+figure
+GM_pdf_matrix(comp_R_accept)
+%% Box-Cox transformation
+lambda = 0;
+if lambda == 0
+    comp_R_transf = log(comp_R);
+else
+    comp_R_transf = (comp_R.^lambda - 1)./(lambda);
+end
+figure
+GM_pdf_matrix(comp_R_transf)
+
+
+
+
+
+
+
+
+
 

@@ -15,6 +15,13 @@ function [] = timeCal_statisticsOutput(OUT_HS,OUT_LS,OUT_time,fittedData)
 timeCal_statsPlot(OUT_HS,OUT_LS,OUT_time);
 timeCal_plotFinalResult(OUT_HS,OUT_LS,OUT_time,fittedData);
 
+%% Plot MRI vs Model
+figure
+plot(linspace(0,1,61),fittedData.H_S,'k')
+hold on
+plot(linspace(0,1,61),OUT_HS)
+
+%%
 close all
 end
 
