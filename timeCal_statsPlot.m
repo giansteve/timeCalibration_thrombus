@@ -1,13 +1,15 @@
-function [] = timeCal_statsPlot(OUT_HS,OUT_LS,OUT_time)
+function [] = timeCal_statsPlot(OUT_HS,OUT_LS,fittedData)
 % plot the stats and output analysis of the moprhoical aorta project
 
 
 % Normalise model time
-OUT_time_norm = (OUT_time - min(OUT_time))./(max(OUT_time) - min(OUT_time));
-
+% OUT_time_norm = (OUT_time - min(OUT_time))./(max(OUT_time) - min(OUT_time));
+OUT_time_norm = linspace(0,1,size(OUT_HS,1));
 %% Time variation of model
 % H/S
+figure('Visible','off')
 timeCal_signalStatsPlot(OUT_time_norm,OUT_HS)
+plot(OUT_time_norm,fittedData.H_S,'r','LineWidth',1)
 % xlim([min(min(output_matrix.time)) max(max(output_matrix.time))])
 % xlim([0 1])
 % ylim([0 1.5])
@@ -18,7 +20,9 @@ GM_printBMP(300,300,'stats_H_S')
 GM_printEPS(300,300,'stats_H_S')
 
 % L/S
+figure('Visible','off')
 timeCal_signalStatsPlot(OUT_time_norm,OUT_LS)
+plot(OUT_time_norm,fittedData.L_S,'r','LineWidth',1)
 % xlim([min(min(output_matrix.time)) max(max(output_matrix.time))])
 % ylim([0 30])
 grid on

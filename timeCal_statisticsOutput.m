@@ -1,4 +1,4 @@
-function [] = timeCal_statisticsOutput(OUT_HS,OUT_LS,OUT_time,fittedData)
+function [] = timeCal_statisticsOutput(OUT_HS,OUT_LS,fittedData)
 
 
 % Ns = size(exp_design,1);
@@ -12,8 +12,8 @@ function [] = timeCal_statisticsOutput(OUT_HS,OUT_LS,OUT_time,fittedData)
 % [stats_prjct.L_S] = timeCal_ConfInt(output_matrix.L_S_model,Ns);
 
 %% Plot
-timeCal_statsPlot(OUT_HS,OUT_LS,OUT_time);
-timeCal_plotFinalResult(OUT_HS,OUT_LS,OUT_time,fittedData);
+timeCal_statsPlot(OUT_HS,OUT_LS,fittedData);
+timeCal_plotFinalResult(OUT_HS,OUT_LS,fittedData);
 
 close all
 end

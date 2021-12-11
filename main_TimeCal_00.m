@@ -51,7 +51,7 @@ human_thr.L_S(:,2) = xlsread('MRIdata.xlsx',1,'J20:J26');                   % st
 [fitData.ff_Vol,fitData.gof_Vol] = fit(human_thr.time,human_thr.volume(:,1),'exp2');
 
 %% Generate new data points based on previous fit
-n_pt = 61;                                                                      % nr. pts to generate
+n_pt = 3000;                                                                      % nr. pts to generate
 fittedData.time = linspace(min(human_thr.time),max(human_thr.time),n_pt);       % time [min]
 fittedData.H_S = fitData.ff_HS.a*exp(fitData.ff_HS.b.*fittedData.time) + ...    % Height/Step
     fitData.ff_HS.c*exp(fitData.ff_HS.d.*fittedData.time);
@@ -101,7 +101,8 @@ myVars = {'INPUT','exp_design'};
 load('timeCal_00input_2000sims_4Feb21.mat',myVars{:})
 
 %% Load output: H/S and L/S
-load('TimeCal_OUTPUT.mat')
+load('TimeCal_OUTPUT.mat'); clear phic_HS_threshold phic_LS_threshold OUT_time
+load('TimeCal_OUTPUT_allTime.mat')
 % delete crushed sim from the input
 exp_design(crushed_sim_idx,:) = [];
 Ns = size(exp_design,1);
@@ -134,32 +135,32 @@ catch
     mkdir(dest_plot)
     cd(dest_plot)
 end
-timeCal_statisticsOutput(OUT_HS,OUT_LS,OUT_time,fittedData);
+timeCal_statisticsOutput(phic_HS_threshold,phic_LS_threshold,fittedData);
 cd(root_destination)
 
 %% Create metamodel of the thrombus model
 % moving PCE computation to UQ[py]lab
-MRI_time_index = (1:10:61);
+MRI_time_index = round(linspace(1,3000,7));
 metamodel.Type = 'Metamodel';
 metamodel.MetaType = 'PCE';
 metamodel.Display = 'verbose';
 metamodel.Method = 'lars';
-metamodel.Degree = 3:12;
-metamodel.TruncOptions.qNorm = 0.95;
+metamodel.Degree = 3:13;
+metamodel.TruncOptions.qNorm = [0.9 0.95];
 metamodel.DegreeEarlyStop = false;
 metamodel.Input = INPUT;
 metamodel.ExpDesign.NSamples = Ns;
 metamodel.ExpDesign.X = exp_design;
 % PCE H/S
-metamodel.ExpDesign.Y = OUT_HS(MRI_time_index,:)';
+metamodel.ExpDesign.Y = phic_HS_threshold(MRI_time_index,:)';
 PCE_HS = uq_createModel(metamodel);
 % PCE L/S
-metamodel.ExpDesign.Y = OUT_LS(MRI_time_index,:)';
+metamodel.ExpDesign.Y = phic_LS_threshold(MRI_time_index,:)';
 PCE_LS = uq_createModel(metamodel);
 
 % save PS: remember to create function to save in specific folder with the
 % date :)
-save('TimeCal_postSurrogate_101221')
+save('TimeCal_postSurrogate_111221')
 
 %% Surrogate accuracy display
 % generate surrogate evaluations
@@ -177,12 +178,12 @@ catch
 end
 figure('Visible','off')
 subplot(221)
-GM_pdf_matrix(OUT_HS(MRI_time_index,:))
+GM_pdf_matrix(phic_HS_threshold(MRI_time_index,:))
 xlim([0 1])
 ylim([0 .2])
 ylabel('$p$ $(\%)$')
 subplot(222)
-GM_pdf_matrix(OUT_LS(MRI_time_index,:))
+GM_pdf_matrix(phic_LS_threshold(MRI_time_index,:))
 xlim([0 inf])
 ylim([0 .2])
 subplot(223)

@@ -1,8 +1,7 @@
-function [] = timeCal_plotFinalResult(OUT_HS,OUT_LS,OUT_time,fittedData)
+function [] = timeCal_plotFinalResult(OUT_HS,OUT_LS,fittedData)
 % plot the probability distribution of the results from the model
 % simulations at the end of the simulation and compare them with the MRI
 % measurements
-
 
 figure('Visible','off')
 subplot(121) % H/S
