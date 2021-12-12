@@ -93,7 +93,7 @@ cd(root_destination)
 
 %% Define Input variables names
 var_names = {'${D}_{\mathrm{c}}$','${k}_{\mathrm{c}}$','${k}_{\mathrm{{BP}}}$','${c}_{\mathrm{t}}$',...
-    '${c}_{\mathrm{{BPt}}}$','$\overline{T}_{\mathrm{Rt}}$','${k}_{\mathrm{{c,wall}}}$',...
+    '${c}_{\mathrm{{BPt}}}$','$\overline{T}_{\mathrm{Rt}}$','${k}_{\mathrm{{cw}}}$',...
     '${c}_{\mathrm{{AP}}}$','${c}_{\mathrm{{BPbt}}}$','$\dot{\overline{\gamma}}_t$'};
 
 %% Read input file
@@ -190,7 +190,7 @@ subplot(223)
 GM_pdf_matrix(Y_pce_HS')
 xlim([0 1])
 ylim([0 .2])
-ylabel('$p$ $(\%)$ surrogate')
+ylabel('$p$ $(\%)$ - surrogate')
 xlabel('$H/S$ $(-)$')
 subplot(224)
 GM_pdf_matrix(Y_pce_LS')
@@ -203,50 +203,73 @@ close
 cd(root_destination)
 
 %% Perform sensitivity analysis
-figure('Visible','on')
-subplot(221)
-GM_pdf_matrix(log(phic_HS_threshold(MRI_time_index,:)))
-% xlim([0 1])
-ylim([0 .2])
-ylabel('$p$ $(\%)$ - model')
-subplot(222)
-GM_pdf_matrix(log(phic_LS_threshold(MRI_time_index,:)))
-% xlim([0 inf])
-ylim([0 .2])
-subplot(223)
-GM_pdf_matrix(log(Y_pce_HS'))
-% xlim([0 1])
-ylim([0 .2])
-ylabel('$p$ $(\%)$ surrogate')
-xlabel('$H/S$ $(-)$')
-subplot(224)
-GM_pdf_matrix(log(Y_pce_LS'))
-% xlim([0 inf])
-ylim([0 .2])
-xlabel('$L/S$ $(-)$')
-%%
-lambda_BC = 0;
-if lambda_BC == 0
-    transfData = log();
-else
-    transfData = (phic_HS_threshold(MRI_time_index,:).^lambda_BC - 1)./lambda_BC;
-end
-figure(1)
-subplot(211)
-GM_pdf_matrix(transfData)
-title('Transformed')
-subplot(212)
-title('Original')
-GM_pdf_matrix(phic_HS_threshold(MRI_time_index,:))
+% the probability distributions of the data will not be transformed. First
+% test is given in this case. In case of error, review this part.
+[SA_HS.main,SA_HS.total] = SA_time(PCE_HS.PCE,M);
+[SA_LS.main,SA_LS.total] = SA_time(PCE_LS.PCE,M);
+cd(root_destination)
+    try
+        dest_SAplot = sprintf('Plot\\SA');
+        cd(dest_SAplot)
+    catch
+        mkdir(dest_SAplot)
+        cd(dest_SAplot)
+    end
+SA_plot_time(SA_HS,linspace(0,1,size(SA_HS.main,1)),'SA_HS','$t^*$')
+subplot(211); legend(var_names,'Interpreter','latex','Location','bestoutside')
+GM_printBMP(400,400,'SA_HS')
+GM_printEPS(400,400,'SA_HS')
 
+SA_plot_time(SA_LS,linspace(0,1,size(SA_LS.main,1)),'SA_LS','$t^*$')
+subplot(211); legend(var_names,'Interpreter','latex','Location','bestoutside')
+GM_printBMP(400,400,'SA_LS')
+GM_printEPS(400,400,'SA_LS')
+cd(root_destination)
 
+%% prepare for Bayesian Inverse problem
 
-
-
-
-
-
-
+% create PRIOR: the input PDF of my model parameters, considering the SA
+% results. We want to find the POSTERIOR of only the sensitivite parameters
+prior.Marginals(1).Name = var_names{1}; 
+prior.Marginals(1).Type = 'Uniform';
+prior.Marginals(1).Parameters = [1e-10 1e-6];
+%
+prior.Marginals(1).Name = var_names{2}; 
+prior.Marginals(1).Type = 'Uniform';
+prior.Marginals(1).Parameters = [2e4 2e6];
+%
+prior.Marginals(1).Name = var_names{3}; 
+prior.Marginals(1).Type = 'Uniform';
+prior.Marginals(1).Parameters = [8e-13 8e-11];
+%
+prior.Marginals(1).Name = var_names{4}; 
+prior.Marginals(1).Type = 'Uniform';
+prior.Marginals(1).Parameters = [1e3 1e5];
+%
+prior.Marginals(1).Name = var_names{5}; 
+prior.Marginals(1).Type = 'Uniform';
+prior.Marginals(1).Parameters = [2e3 2e5];
+%
+prior.Marginals(1).Name = var_names{6}; 
+prior.Marginals(1).Type = 'Uniform';
+prior.Marginals(1).Parameters = [1e-1 1];
+%
+prior.Marginals(1).Name = var_names{7}; 
+prior.Marginals(1).Type = 'Uniform';
+prior.Marginals(1).Parameters = [1e-10 1e-6];
+%
+prior.Marginals(1).Name = var_names{8}; 
+prior.Marginals(1).Type = 'Uniform';
+prior.Marginals(1).Parameters = [1e-10 1e-6];
+%
+prior.Marginals(1).Name = var_names{9}; 
+prior.Marginals(1).Type = 'Uniform';
+prior.Marginals(1).Parameters = [1e-10 1e-6];
+%
+prior.Marginals(1).Name = var_names{10}; 
+prior.Marginals(1).Type = 'Uniform';
+prior.Marginals(1).Parameters = [1e-10 1e-6];
+%
 
 
 

@@ -226,8 +226,50 @@ GM_printBMP(400,400,'SA_LS')
 GM_printEPS(400,400,'SA_LS')
 cd(root_destination)
 
+%% prepare for Bayesian Inverse problem
 
-
+% create PRIOR: the input PDF of my model parameters, considering the SA
+% results. We want to find the POSTERIOR of only the sensitivite parameters
+prior.Marginals(1).Name = var_names{1}; 
+prior.Marginals(1).Type = 'Uniform';
+prior.Marginals(1).Parameters = [1e-10 1e-6];
+%
+prior.Marginals(1).Name = var_names{2}; 
+prior.Marginals(1).Type = 'Uniform';
+prior.Marginals(1).Parameters = [2e4 2e6];
+%
+prior.Marginals(1).Name = var_names{3}; 
+prior.Marginals(1).Type = 'Uniform';
+prior.Marginals(1).Parameters = [8e-13 8e-11];
+%
+prior.Marginals(1).Name = var_names{4}; 
+prior.Marginals(1).Type = 'Uniform';
+prior.Marginals(1).Parameters = [1e3 1e5];
+%
+prior.Marginals(1).Name = var_names{5}; 
+prior.Marginals(1).Type = 'Uniform';
+prior.Marginals(1).Parameters = [2e3 2e5];
+%
+prior.Marginals(1).Name = var_names{6}; 
+prior.Marginals(1).Type = 'Uniform';
+prior.Marginals(1).Parameters = [1e-1 1];
+%
+prior.Marginals(1).Name = var_names{7}; 
+prior.Marginals(1).Type = 'Uniform';
+prior.Marginals(1).Parameters = [1e2 1e5];
+%
+prior.Marginals(1).Name = var_names{8}; 
+prior.Marginals(1).Type = 'Uniform';
+prior.Marginals(1).Parameters = [7.5e12 2.25e13];
+%
+prior.Marginals(1).Name = var_names{9}; 
+prior.Marginals(1).Type = 'Uniform';
+prior.Marginals(1).Parameters = [1e1 2500000];
+%
+prior.Marginals(1).Name = var_names{10}; 
+prior.Marginals(1).Type = 'Uniform';
+prior.Marginals(1).Parameters = [1e-1 20];
+%
 
 
 
