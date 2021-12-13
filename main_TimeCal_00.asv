@@ -208,13 +208,13 @@ cd(root_destination)
 [SA_HS.main,SA_HS.total] = SA_time(PCE_HS.PCE,M);
 [SA_LS.main,SA_LS.total] = SA_time(PCE_LS.PCE,M);
 cd(root_destination)
-    try
-        dest_SAplot = sprintf('Plot\\SA');
-        cd(dest_SAplot)
-    catch
-        mkdir(dest_SAplot)
-        cd(dest_SAplot)
-    end
+try
+    dest_SAplot = sprintf('Plot\\SA');
+    cd(dest_SAplot)
+catch
+    mkdir(dest_SAplot)
+    cd(dest_SAplot)
+end
 SA_plot_time(SA_HS,linspace(0,1,size(SA_HS.main,1)),'SA_HS','$t^*$')
 subplot(211); legend(var_names,'Interpreter','latex','Location','bestoutside')
 GM_printBMP(400,400,'SA_HS')
@@ -228,48 +228,86 @@ cd(root_destination)
 
 %% prepare for Bayesian Inverse problem
 
-% create PRIOR: the input PDF of my model parameters, considering the SA
+% 1. create PRIOR: the input PDF of my model parameters, considering the SA
 % results. We want to find the POSTERIOR of only the sensitivite parameters
-prior.Marginals(1).Name = var_names{1}; 
-prior.Marginals(1).Type = 'Uniform';
-prior.Marginals(1).Parameters = [1e-10 1e-6];
-%
-prior.Marginals(1).Name = var_names{2}; 
-prior.Marginals(1).Type = 'Uniform';
-prior.Marginals(1).Parameters = [2e4 2e6];
-%
-prior.Marginals(1).Name = var_names{3}; 
-prior.Marginals(1).Type = 'Uniform';
-prior.Marginals(1).Parameters = [8e-13 8e-11];
-%
-prior.Marginals(1).Name = var_names{4}; 
-prior.Marginals(1).Type = 'Uniform';
-prior.Marginals(1).Parameters = [1e3 1e5];
-%
-prior.Marginals(1).Name = var_names{5}; 
-prior.Marginals(1).Type = 'Uniform';
-prior.Marginals(1).Parameters = [2e3 2e5];
-%
-prior.Marginals(1).Name = var_names{6}; 
-prior.Marginals(1).Type = 'Uniform';
-prior.Marginals(1).Parameters = [1e-1 1];
-%
-prior.Marginals(1).Name = var_names{7}; 
-prior.Marginals(1).Type = 'Uniform';
-prior.Marginals(1).Parameters = [1e-10 1e-6];
-%
-prior.Marginals(1).Name = var_names{8}; 
-prior.Marginals(1).Type = 'Uniform';
-prior.Marginals(1).Parameters = [1e-10 1e-6];
-%
-prior.Marginals(1).Name = var_names{9}; 
-prior.Marginals(1).Type = 'Uniform';
-prior.Marginals(1).Parameters = [1e-10 1e-6];
-%
-prior.Marginals(1).Name = var_names{10}; 
-prior.Marginals(1).Type = 'Uniform';
-prior.Marginals(1).Parameters = [1e-10 1e-6];
-%
+bounds_prior = [min(exp_design); max(exp_design)];
+nonSensitive_param = [2 4 6 7 8 9];
+for m = 1:M
+    if logical(sum(eq(m,nonSensitive_param)))
+%         prior.Marginals(m).Name = var_names{m};
+        prior.Marginals(m).Type = 'Constant';
+        prior.Marginals(m).Parameters = mean(bounds_prior(:,m));
+    else
+%         prior.Marginals(m).Name = var_names{m};
+        prior.Marginals(m).Type = 'Uniform';
+        prior.Marginals(m).Parameters = bounds_prior(:,m);
+    end
+end
+myPriorDist = uq_createInput(prior);
+
+% 2. give forward model, in my case the PCE surrogates
+% bayesOpts_HS.ForwardModel = PCE_HS;
+% bayesOpts_LS.ForwardModel = PCE_LS;
+ForwardModels(1).Model = PCE_HS;
+ForwardModels(1).PMap = [1 2 3 4 5 6 7 8 9 10];
+ForwardModels(2).Model = PCE_LS;
+ForwardModels(2).PMap = [1 2 3 4 5 6 7 8 9 10];
+bayesOpts.ForwardModel = ForwardModels;
+
+% 3. provide measurements
+% myData_HS.Name = 'H_S';
+% myData_HS.y = human_thr.H_S(:,1); % column vectors
+% myData_LS.Name = 'L_S';
+% myData_LS.y = human_thr.L_S(:,1); % column vectors
+myData(1).Name = 'H_S';
+myData(1).y = human_thr.H_S(:,1); % column vectors
+myData(1).MOMap = [1;...    % Model ID
+                   1];      % Output ID
+myData(2).Name = 'L_S';
+myData(2).y = human_thr.L_S(:,1); % column vectors
+myData(2).MOMap = [2;...    % Model ID
+                   1];      % Output ID
+
+% 4. Perform Bayesiam analysis
+% bayesOpts_HS.Type = 'Inversion';
+% bayesOpts_HS.Data = myData_HS;
+% bayesOpts_LS.Type = 'Inversion';
+% bayesOpts_LS.Data = myData_LS;
+bayesOpts.Type = 'Inversion';
+bayesOpts.Data = myData;
+
+% 4.1 give the discrepancy: it is the STD of the data. The discrepancy simulates the measurement error!
+% discrepancyOpts_HS.Type = 'Gaussian';
+% discrepancyOpts_HS.Parameters = mean(human_thr.H_S(:,2)); % remember to square it
+% bayesOpts_HS.Discrepancy = discrepancyOpts_HS;
+% discrepancyOpts_LS.Type = 'Gaussian';
+% discrepancyOpts_LS.Parameters = human_thr.L_S(:,2); % remember to square it
+% bayesOpts_LS.Discrepancy = discrepancyOpts_LS;
+discrepancyOpts(1).Type = 'Gaussian';
+discrepancyOpts(1).Parameters = mean(human_thr.H_S(:,2)); % remember to square it
+discrepancyOpts(2).Type = 'Gaussian';
+discrepancyOpts(2).Parameters = mean(human_thr.L_S(:,2)); % remember to square it
+bayesOpts.Discrepancy = discrepancyOpts;
+
+% chose the solver
+bayesOpts.solver.Type = 'MCMC';
+bayesOpts.solver.MCMC.Sampler = 'MH'; % metropolis-hasting
+bayesOpts.solver.MCMC.Steps = 100000; % scalar to impose number of iterations
+bayesOpts.solver.MCMC.NChains = 30; % number of chains: starting point in the input domain per dimension
+% live visualization, enable only for mistuning check
+bayesOpts.solver.MCMC.Visualize.Parameters = [1;2;3;4];
+bayesOpts.solver.MCMC.Visualize.Interval = 20; % every xx steps
+% RUN IT FORREST
+myBayesian_bothModels = uq_createAnalysis(bayesOpts);
+
+% results are stored into myBayesian.Results
+% generate good posterior sample with
+uq_postProcessInversion(myBayesian_bothModels)
+% Post-processing
+uq_print(myBayesian_bothModels)
+
+
+
 
 
 
