@@ -13,7 +13,11 @@ colors(colors==0)=.05;
 
 %% define max and min of variable
 N_edges = 100;
-edges_hist = linspace(min(min(mat)),max(max(mat)),N_edges);
+if min(min(mat)) == -inf
+    edges_hist = linspace(-1,max(max(mat)),N_edges);
+else
+    edges_hist = linspace(min(min(mat)),max(max(mat)),N_edges);
+end
 centres = edges_hist(1:end-1)+ diff(edges_hist)/2;
 
 % figure

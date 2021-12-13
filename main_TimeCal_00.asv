@@ -260,13 +260,13 @@ bayesOpts.ForwardModel = ForwardModels;
 % myData_LS.Name = 'L_S';
 % myData_LS.y = human_thr.L_S(:,1); % column vectors
 myData(1).Name = 'H_S';
-myData(1).y = human_thr.H_S(:,1)'; % column vectors
-myData(1).MOMap = [1 1 1 1 1 1 1;...    % Model ID
-                   1 2 3 4 5 6 7];      % Output ID
+myData(1).y = human_thr.H_S(:,1); % column vectors
+myData(1).MOMap = [1;...    % Model ID
+                   1];      % Output ID
 myData(2).Name = 'L_S';
-myData(2).y = human_thr.L_S(:,1)'; % column vectors
-myData(2).MOMap = [2 2 2 2 2 2 2;...    % Model ID
-                   1 2 3 4 5 6 7];      % Output ID
+myData(2).y = human_thr.L_S(:,1); % column vectors
+myData(2).MOMap = [2;...    % Model ID
+                   1];      % Output ID
 
 % 4. Perform Bayesiam analysis
 % bayesOpts_HS.Type = 'Inversion';
@@ -293,7 +293,7 @@ bayesOpts.Discrepancy = discrepancyOpts;
 bayesOpts.solver.Type = 'MCMC';
 bayesOpts.solver.MCMC.Sampler = 'MH'; % metropolis-hasting
 bayesOpts.solver.MCMC.Steps = 100000; % scalar to impose number of iterations
-bayesOpts.solver.MCMC.NChains = 40; % number of chains: starting point in the input domain per dimension
+bayesOpts.solver.MCMC.NChains = 30; % number of chains: starting point in the input domain per dimension
 % live visualization, enable only for mistuning check
 bayesOpts.solver.MCMC.Visualize.Parameters = [1;2;3;4];
 bayesOpts.solver.MCMC.Visualize.Interval = 20; % every xx steps
@@ -305,9 +305,8 @@ myBayesian_bothModels = uq_createAnalysis(bayesOpts);
 uq_postProcessInversion(myBayesian_bothModels)
 % Post-processing
 uq_print(myBayesian_bothModels)
-uq_display(myBayesian_bothModels)
 
-save('TimeCal_postBayesian_131221.mat')
+
 
 
 
