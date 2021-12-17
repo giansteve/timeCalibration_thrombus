@@ -284,19 +284,19 @@ bayesOpts.Data = myData;
 % discrepancyOpts_LS.Parameters = human_thr.L_S(:,2); % remember to square it
 % bayesOpts_LS.Discrepancy = discrepancyOpts_LS;
 discrepancyOpts(1).Type = 'Gaussian';
-discrepancyOpts(1).Parameters = mean(human_thr.H_S(:,2)); % remember to square it
+discrepancyOpts(1).Parameters = mean(human_thr.H_S(:,2)).^2; % remember to square it
 discrepancyOpts(2).Type = 'Gaussian';
-discrepancyOpts(2).Parameters = mean(human_thr.L_S(:,2)); % remember to square it
+discrepancyOpts(2).Parameters = mean(human_thr.L_S(:,2)).^2; % remember to square it
 bayesOpts.Discrepancy = discrepancyOpts;
 
 % chose the solver
 bayesOpts.solver.Type = 'MCMC';
 bayesOpts.solver.MCMC.Sampler = 'MH'; % metropolis-hasting
-bayesOpts.solver.MCMC.Steps = 100000; % scalar to impose number of iterations
-bayesOpts.solver.MCMC.NChains = 40; % number of chains: starting point in the input domain per dimension
+bayesOpts.solver.MCMC.Steps = 200000; % scalar to impose number of iterations
+bayesOpts.solver.MCMC.NChains = 150; % number of chains: starting point in the input domain per dimension
 % live visualization, enable only for mistuning check
 bayesOpts.solver.MCMC.Visualize.Parameters = [1;2;3;4];
-bayesOpts.solver.MCMC.Visualize.Interval = 20; % every xx steps
+bayesOpts.solver.MCMC.Visualize.Interval = 500; % every xx steps
 % RUN IT FORREST
 myBayesian_bothModels = uq_createAnalysis(bayesOpts);
 
@@ -307,7 +307,9 @@ uq_postProcessInversion(myBayesian_bothModels)
 uq_print(myBayesian_bothModels)
 uq_display(myBayesian_bothModels)
 
-save('TimeCal_postBayesian_131221.mat')
+cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles')
+save('TimeCal_postBayesian_161221_discrepanyFixed.mat','-v7.3')
+cd(root_destination)
 
 
 
