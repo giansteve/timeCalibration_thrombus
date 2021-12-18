@@ -12,13 +12,13 @@ myToken = 'b81b324bac9a3ebe0768e69efb5b98cd91b62279' # The user's token to acces
 UQCloud_instance = 'https://beta.uq-cloud.io' # The UQCloud instance to use
 
 # Start the session
-#mySession = sessions.cloud(host=UQCloud_instance, token=myToken)
-mySession = sessions.cloud() # since I have saved my credentials already
+mySession = sessions.cloud(host=UQCloud_instance, token=myToken)
+# mySession = sessions.cloud() # since I have saved my credentials already
 # (Optional) Get a convenient handle to the command line interface
 uq = mySession.cli
 
 # Reset the session
-mySession.reset()
+# mySession.reset()
 
 #%% code start
 # Specify the options for a bivariate normal random vector
