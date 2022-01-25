@@ -45,7 +45,7 @@ MRI_growthRate = readmatrix(excelFileName,'Sheet',1,'Range','M11:P70');
 folderPath = 'TimeCal_Out';
 cd(root_destination)
 try
-    dest_plot = sprintf('Plot\\%s',folderPath);
+    dest_plot = sprintf('Plot_AliModel_Calibration\\%s',folderPath);
     cd(dest_plot)
 catch
     mkdir(dest_plot)

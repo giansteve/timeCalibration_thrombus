@@ -1,6 +1,9 @@
 function [OUTPUT,crushed_sim_idx] = timeCal_read_output(Ns,folderPath)
 % Read and report the output of the morphological_aorta project.
 
+% input = number of time steps performed in simulation
+nTimeSteps = 80;
+
 %% destination
 dest_folder = sprintf('C:\\Users\\gm20m18\\Desktop\\%s',folderPath);
 cd(dest_folder)
@@ -11,7 +14,7 @@ foldersSim(1:2) = [];                       % delete going back folders
 crush_idx = 1;
 
 crushed_sim_idx = [];
-date_begin = datetime('now');
+% date_begin = datetime('now');
 
 for nsim = 1:Ns
     text_screen_sim = sprintf(' - simulation: %d/%d: ',nsim,Ns);
@@ -21,9 +24,9 @@ for nsim = 1:Ns
     try % is the simulation XXXX done?
         if nsim < 10 && nsim >= 1
             cd(sprintf('%s\\TC_X000%d\\postProcessing',pwd,nsim));
-        elseif nsim < 99 && nsim >= 10
+        elseif nsim <= 99 && nsim >= 10
             cd(sprintf('%s\\TC_X00%d\\postProcessing',pwd,nsim));
-        elseif nsim < 999 && nsim >= 100
+        elseif nsim <= 999 && nsim >= 100
             cd(sprintf('%s\\TC_X0%d\\postProcessing',pwd,nsim));
         else
             cd(sprintf('%s\\TC_X%d\\postProcessing',pwd,nsim));
@@ -31,14 +34,9 @@ for nsim = 1:Ns
         
     catch % simulation not performed
         warning('off','all')
-        elaps_time(nsim) = toc(elaps_time(nsim));
-        estimat_TotTime = mean(elaps_time) * Ns ; %elapsed time in hr
-        txt_sim = sprintf('\t NO :( \t %s \t %.2f sec \t %.2f hr \t %s - \n',...
-            datetime('now','Format','d.MMM.yy HH:mm:ss'),...
-            elaps_time(nsim),...
-            estimat_TotTime/60/60,...
-            datestr(addtodate(datenum(date_begin),estimat_TotTime,'second'),'HH:MM:ss'));
-        fprintf(txt_sim)
+%         elaps_time(nsim) = toc(elaps_time(nsim));
+%         estimat_TotTime = mean(elaps_time) * Ns ; %elapsed time in hr
+        fprintf(sprintf('\t NO :( \n'))
         crushed_sim_idx(crush_idx) = nsim;
         crush_idx = crush_idx + 1;
         cd(dest_folder)
@@ -76,16 +74,11 @@ for nsim = 1:Ns
         end
         fclose(fileID_phiC);
         OUTPUT(nsim).time = OUTPUT(nsim).H_S.phi_c(:,1);
-        if size(OUTPUT(nsim).time,1) ~= 4000 % sim didnt perform the whole time?
+        if size(OUTPUT(nsim).time,1) ~= nTimeSteps % sim didnt perform the whole time?
             warning('off','all')
-            elaps_time(nsim) = toc(elaps_time(nsim));
-            estimat_TotTime = mean(elaps_time) * Ns ; %elapsed time in hr
-            txt_sim = sprintf('\t NO :( \t %s \t %.2f sec \t %.2f hr \t %s - \n',...
-                datetime('now','Format','d.MMM.yy HH:mm:ss'),...
-                elaps_time(nsim),...
-                estimat_TotTime/60/60,...
-                datestr(addtodate(datenum(date_begin),estimat_TotTime,'second'),'HH:MM:ss'));
-            fprintf(txt_sim)
+%             elaps_time(nsim) = toc(elaps_time(nsim));
+%             estimat_TotTime = mean(elaps_time) * Ns ; %elapsed time in hr
+            fprintf(sprintf('\t NO :( \n'))
             crushed_sim_idx(crush_idx) = nsim;
             crush_idx = crush_idx + 1;
             cd(dest_folder)
@@ -145,26 +138,14 @@ for nsim = 1:Ns
         
         cd ..\.. % go back to sims folder
         warning ('off','all')
-        elaps_time(nsim) = toc(elaps_time(nsim));
-        estimat_TotTime = mean(elaps_time) * Ns ; %elapsed time in hr
-        txt_sim = sprintf('\t OK :) \t %s \t %.2f sec \t %.2f hr \t %s \n',...
-            datetime('now','Format','d.MMM.yy HH:mm:ss'),...
-            elaps_time(nsim),...
-            estimat_TotTime/60/60,...
-            datestr(addtodate(datenum(date_begin),estimat_TotTime,'second'),'HH:MM:ss'));
-        fprintf(txt_sim)
+        fprintf(sprintf('\t OK :) \n'))
         warning ('on','all')
         
     catch % sth went wrong during simulation
-        elaps_time(nsim) = toc(elaps_time(nsim));
-        estimat_TotTime = mean(elaps_time) * Ns ; %elapsed time in hr
-        txt_sim = sprintf('\t NO :( \t %s \t %.2f sec \t %.2f hr \t %s - \n',...
-            datetime('now','Format','d.MMM.yy HH:mm:ss'),...
-            elaps_time(nsim),...
-            estimat_TotTime/60/60,...
-            datestr(addtodate(datenum(date_begin),estimat_TotTime,'second'),'HH:MM:ss'));
+%         elaps_time(nsim) = toc(elaps_time(nsim));
+%         estimat_TotTime = mean(elaps_time) * Ns ; %elapsed time in hr
         warning('off','all')
-        fprintf(txt_sim)
+        fprintf(sprintf('\t NO :( \n'))
         crushed_sim_idx(crush_idx) = nsim;
         crush_idx = crush_idx + 1;
         cd(dest_folder)
