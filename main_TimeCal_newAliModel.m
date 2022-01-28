@@ -242,18 +242,19 @@ GM_printEPS(400,400,'SA_LS')
 cd(root_destination)
 
 %% prepare for Bayesian Inverse problem
-
+clear('bayesOpts','myPriorDist','ForwardModels','myData','discrepancyOpts','myBayesian_bothModels')
+clc
 % 1. create PRIOR: the input PDF of my model parameters, considering the SA
 % results. We want to find the POSTERIOR of only the sensitivite parameters
 bounds_prior = [min(exp_design); max(exp_design)];
 nonSensitive_param = [2 4 5 7];
 for m = 1:M
     if logical(sum(eq(m,nonSensitive_param)))
-%         prior.Marginals(m).Name = var_names{m};
+        prior.Marginals(m).Name = var_names{m};
         prior.Marginals(m).Type = 'Constant';
         prior.Marginals(m).Parameters = mean(bounds_prior(:,m));
     else
-%         prior.Marginals(m).Name = var_names{m};
+        prior.Marginals(m).Name = var_names{m};
         prior.Marginals(m).Type = 'Uniform';
         prior.Marginals(m).Parameters = bounds_prior(:,m);
     end
@@ -277,14 +278,14 @@ bayesOpts.ForwardModel = ForwardModels;
 % myData_LS.Name = 'L_S';
 % myData_LS.y = human_thr.L_S(:,1); % column vectors
 myData(1).Name = '$H_S$';
-myData(1).y = human_thr.H_S(2:end,1)'; % column vectors
+myData(1).y = human_thr.H_S(:,1)'; % column vectors
 myData(1).MOMap = [1 1 1 1 1 1 1;...    % Model ID
                    1 2 3 4 5 6 7];      % Output ID
 myData(2).Name = '$L_S$';
-myData(2).y = human_thr.L_S(2:end,1)'; % column vectors
+myData(2).y = human_thr.L_S(:,1)'; % column vectors
 myData(2).MOMap = [2 2 2 2 2 2 2;...    % Model ID
                    1 2 3 4 5 6 7];      % Output ID
-
+               
 % 4. Perform Bayesiam analysis
 % bayesOpts_HS.Type = 'Inversion';
 % bayesOpts_HS.Data = myData_HS;
@@ -294,31 +295,36 @@ bayesOpts.Type = 'Inversion';
 bayesOpts.Data = myData;
 bayesOpts.Prior = myPriorDist;
 
-% 4.1 give the discrepancy: it is the STD of the data. The discrepancy simulates the measurement error!
+% 4.1 give the discrepancy
+% :::::::::::::::: ORIGINAL :::::::::::::::::::::::
+% Discrepancy is the STD of the data. The discrepancy simulates the measurement error!
 % In case of multiple outputs, the discrepancy has the shape of a vector
 % whose dimension is equal to the number of dimensions. In this case: 1x7
 % :::::::::::::::: 28/01/22 UPDATE ::::::::::::::::
 % the discrepancy model has known mean and std at each time step. So we
 % need to build it accordingly.
+% :::::::::::::::: 28/01/22 UPDATE 2 ::::::::::::::
+% The discrepancy is the error between the computational model and the
+% data.
 % % discrepancyOpts(1).Type = 'Gaussian';
 % % discrepancyOpts(1).Parameters = (human_thr.H_S(:,2)').^2; % remember to square it
 % % discrepancyOpts(2).Type = 'Gaussian';
 % % discrepancyOpts(2).Parameters = (human_thr.L_S(:,2)').^2; % remember to square it
-% [sigmaOptsHS,sigmaOptsLS] = timeCal_discrModel(human_thr);
-% discrepancyOpts(1).Type = 'Gaussian';
-% discrepancyOpts(1).Prior = sigmaOptsHS;
-% discrepancyOpts(2).Type = 'Gaussian';
-% discrepancyOpts(2).Prior = sigmaOptsLS;
-% bayesOpts.Discrepancy = discrepancyOpts;
+[sigmaOptsHS,sigmaOptsLS] = timeCal_discrModel(human_thr);
+discrepancyOpts(1).Type = 'Gaussian';
+discrepancyOpts(1).Prior = sigmaOptsHS;
+discrepancyOpts(2).Type = 'Gaussian';
+discrepancyOpts(2).Prior = sigmaOptsLS;
+bayesOpts.Discrepancy = discrepancyOpts;
 
 % chose the solver
 bayesOpts.solver.Type = 'MCMC';
 bayesOpts.solver.MCMC.Sampler = 'MH'; % metropolis-hasting
-bayesOpts.solver.MCMC.Steps = 5000; % scalar to impose number of iterations
+bayesOpts.solver.MCMC.Steps = 500000; % scalar to impose number of iterations
 bayesOpts.solver.MCMC.NChains = 250; % number of chains: starting point in the input domain per dimension
 % live visualization, enable only for mistuning check
 bayesOpts.solver.MCMC.Visualize.Parameters = [1;2;3];
-bayesOpts.solver.MCMC.Visualize.Interval = 20; % every xx steps
+bayesOpts.solver.MCMC.Visualize.Interval = 250; % every xx steps
 % RUN IT FORREST
 myBayesian_bothModels = uq_createAnalysis(bayesOpts);
 
@@ -330,7 +336,7 @@ uq_print(myBayesian_bothModels)
 uq_display(myBayesian_bothModels)
 
 cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles')
-save('_test_TimeCal_postBayesian_AliModel00_multipleDiscrepancy.mat','-v7.3')
+save('_testBig_TimeCal_postBayesian_AliModel00_gaussianDiscrepancy.mat','-v7.3')
 cd(root_destination)
 
 
