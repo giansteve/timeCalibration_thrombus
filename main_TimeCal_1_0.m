@@ -260,6 +260,8 @@ for m = 1:M
 end
 myPriorDist = uq_createInput(prior);
 
+% TRY TO COMPUTE FROM SECOND TIME STEP
+
 % 2. give forward model, in my case the PCE surrogates
 % bayesOpts_HS.ForwardModel = PCE_HS;
 % bayesOpts_LS.ForwardModel = PCE_LS;
@@ -275,11 +277,11 @@ bayesOpts.ForwardModel = ForwardModels;
 % myData_LS.Name = 'L_S';
 % myData_LS.y = human_thr.L_S(:,1); % column vectors
 myData(1).Name = '$H_S$';
-myData(1).y = human_thr.H_S(:,1)'; % column vectors
+myData(1).y = human_thr.H_S(2:end,1)'; % column vectors
 myData(1).MOMap = [1 1 1 1 1 1 1;...    % Model ID
                    1 2 3 4 5 6 7];      % Output ID
 myData(2).Name = '$L_S$';
-myData(2).y = human_thr.L_S(:,1)'; % column vectors
+myData(2).y = human_thr.L_S(2:end,1)'; % column vectors
 myData(2).MOMap = [2 2 2 2 2 2 2;...    % Model ID
                    1 2 3 4 5 6 7];      % Output ID
 
@@ -290,24 +292,33 @@ myData(2).MOMap = [2 2 2 2 2 2 2;...    % Model ID
 % bayesOpts_LS.Data = myData_LS;
 bayesOpts.Type = 'Inversion';
 bayesOpts.Data = myData;
+bayesOpts.Prior = myPriorDist;
 
 % 4.1 give the discrepancy: it is the STD of the data. The discrepancy simulates the measurement error!
 % In case of multiple outputs, the discrepancy has the shape of a vector
 % whose dimension is equal to the number of dimensions. In this case: 1x7
-discrepancyOpts(1).Type = 'Gaussian';
-discrepancyOpts(1).Parameters = (human_thr.H_S(:,2)').^2; % remember to square it
-discrepancyOpts(2).Type = 'Gaussian';
-discrepancyOpts(2).Parameters = (human_thr.L_S(:,2)').^2; % remember to square it
-bayesOpts.Discrepancy = discrepancyOpts;
+% :::::::::::::::: 28/01/22 UPDATE ::::::::::::::::
+% the discrepancy model has known mean and std at each time step. So we
+% need to build it accordingly.
+% % discrepancyOpts(1).Type = 'Gaussian';
+% % discrepancyOpts(1).Parameters = (human_thr.H_S(:,2)').^2; % remember to square it
+% % discrepancyOpts(2).Type = 'Gaussian';
+% % discrepancyOpts(2).Parameters = (human_thr.L_S(:,2)').^2; % remember to square it
+% [sigmaOptsHS,sigmaOptsLS] = timeCal_discrModel(human_thr);
+% discrepancyOpts(1).Type = 'Gaussian';
+% discrepancyOpts(1).Prior = sigmaOptsHS;
+% discrepancyOpts(2).Type = 'Gaussian';
+% discrepancyOpts(2).Prior = sigmaOptsLS;
+% bayesOpts.Discrepancy = discrepancyOpts;
 
 % chose the solver
 bayesOpts.solver.Type = 'MCMC';
 bayesOpts.solver.MCMC.Sampler = 'MH'; % metropolis-hasting
-bayesOpts.solver.MCMC.Steps = 500000; % scalar to impose number of iterations
+bayesOpts.solver.MCMC.Steps = 5000; % scalar to impose number of iterations
 bayesOpts.solver.MCMC.NChains = 250; % number of chains: starting point in the input domain per dimension
 % live visualization, enable only for mistuning check
 bayesOpts.solver.MCMC.Visualize.Parameters = [1;2;3];
-bayesOpts.solver.MCMC.Visualize.Interval = 200; % every xx steps
+bayesOpts.solver.MCMC.Visualize.Interval = 20; % every xx steps
 % RUN IT FORREST
 myBayesian_bothModels = uq_createAnalysis(bayesOpts);
 
