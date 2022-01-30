@@ -52,7 +52,7 @@ sigmaOutHS = uq_createInput(SigmaOptsHS);
 % SigmaOptsLS.Marginals(6).Type = 'Gaussian';
 % SigmaOptsLS.Marginals(6).Parameters = [humanData.L_S(7,1) humanData.L_S(7,2)];
 
-SigmaOptsLS.Marginals(1).Name = '$\epsilon_{HS}$';
+SigmaOptsLS.Marginals(1).Name = '$\epsilon_{LS}$';
 SigmaOptsLS.Marginals(1).Type = 'Uniform';
 SigmaOptsLS.Marginals(1).Parameters = [0 0.1];
 sigmaOutLS = uq_createInput(SigmaOptsLS);
