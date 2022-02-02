@@ -93,12 +93,12 @@ cd(root_destination)
 
 %% Define Input variables names
 var_names = {'${D}_{\mathrm{c}}$',...
-            '${k}_{\mathrm{c}}$',...
-            '$c_\mathrm{t}$',...
-            '${k}_{\mathrm{cw}}$',...
-            '${c}_{\mathrm{{BPt}}}$',...
-            '${\dot{\gamma}}$',...
-            '${\dot{\gamma}}_\mathrm{inst}$'};
+    '${k}_{\mathrm{c}}$',...
+    '$c_\mathrm{t}$',...
+    '${k}_{\mathrm{cw}}$',...
+    '${c}_{\mathrm{{BPt}}}$',...
+    '${\dot{\gamma}}$',...
+    '${\dot{\gamma}}_\mathrm{inst}$'};
 
 %% Read input file
 myVars = {'INPUT','exp_design'};
@@ -112,7 +112,7 @@ if regexp(lower(inp),'y')
     load('TimeCal_OUTPUT_allTime.mat')
 elseif regexp(lower(inp),'n')
     load('RawOutput_25Jan22_5000sim.mat')
-%     load('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\TimeCal_phic_25Jan22_5000sim.mat')
+    %     load('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\TimeCal_phic_25Jan22_5000sim.mat')
     phic_HS_threshold = outToPCE.H_S;
     phic_LS_threshold = outToPCE.L_S;
 else
@@ -247,6 +247,7 @@ clc
 % 1. create PRIOR: the input PDF of my model parameters, considering the SA
 % results. We want to find the POSTERIOR of only the sensitivite parameters
 bounds_prior = [min(exp_design); max(exp_design)];
+sensitivite_param = [1 3 6];
 nonSensitive_param = [2 4 5 7];
 for m = 1:M
     if logical(sum(eq(m,nonSensitive_param)))
@@ -280,12 +281,12 @@ bayesOpts.ForwardModel = ForwardModels;
 myData(1).Name = '$H_S$';
 myData(1).y = human_thr.H_S(:,1)'; % column vectors
 myData(1).MOMap = [1 1 1 1 1 1 1;...    % Model ID
-                   1 2 3 4 5 6 7];      % Output ID
+    1 2 3 4 5 6 7];      % Output ID
 myData(2).Name = '$L_S$';
 myData(2).y = human_thr.L_S(:,1)'; % column vectors
 myData(2).MOMap = [2 2 2 2 2 2 2;...    % Model ID
-                   1 2 3 4 5 6 7];      % Output ID
-               
+    1 2 3 4 5 6 7];      % Output ID
+
 % 4. Perform Bayesiam analysis
 % bayesOpts_HS.Type = 'Inversion';
 % bayesOpts_HS.Data = myData_HS;
@@ -332,7 +333,18 @@ myBayesian_bothModels = uq_createAnalysis(bayesOpts);
 % generate good posterior sample with
 uq_postProcessInversion(myBayesian_bothModels,'burnIn', 0.8,'pointEstimate',{'Mean','MAP'})
 % Post-processing
+myBayesian_bothModels.Internal.FullPrior.Marginals(1).Name = 'Dc';
+myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = 'ct';
+myBayesian_bothModels.Internal.FullPrior.Marginals(3).Name = 'gamma';
+myBayesian_bothModels.Internal.FullPrior.Marginals(4).Name = 'e_HS';
+myBayesian_bothModels.Internal.FullPrior.Marginals(5).Name = 'e_LS'; % reChange name back to original
 uq_print(myBayesian_bothModels)
+myBayesian_bothModels.Internal.FullPrior.Marginals(1).Name = var_names{1};
+myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = var_names{2};
+myBayesian_bothModels.Internal.FullPrior.Marginals(3).Name = var_names{3};
+myBayesian_bothModels.Internal.FullPrior.Marginals(4).Name = '$\epsilon_{HS}$';
+myBayesian_bothModels.Internal.FullPrior.Marginals(5).Name = '$\epsilon_{LS}$'; % reChange name back to original
+
 uq_display(myBayesian_bothModels)
 
 cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles')
@@ -350,51 +362,107 @@ myPointEstimate = myBayesian_bothModels.Results.PostProc.PointEstimate.ForwardRu
 PostSample3D = myBayesian_bothModels.Results.PostProc.PostSample;
 PostSample2D = reshape(permute(PostSample3D, [2 1 3]), size(PostSample3D, 2), []).';
 
+colorRange = [.6 .6 .6;
+    0.0 0.0 0.0];
 n_limit = 1000000;
-figure
-subplot(221)
-histogram(PostSample2D(end-n_limit:end,1),'Normalization','probability')
-hold on
-xline(myBayesian_bothModels.Results.PostProc.PointEstimate.X{1,2}(1),'r');
-xlabel(var_names{1})
-subplot(224)
-histogram(PostSample2D(end-n_limit:end,2),'Normalization','probability')
-hold on
-xline(myBayesian_bothModels.Results.PostProc.PointEstimate.X{1,2}(2),'r');
-xlabel(var_names{2})
-camroll(90)
-subplot(223)
-scatter(PostSample2D(end-n_limit:end,1),PostSample2D(end-n_limit:end,2),1,'k')
-hold on
-xline(myBayesian_bothModels.Results.PostProc.PointEstimate.X{1,2}(1),'r');
-yline(myBayesian_bothModels.Results.PostProc.PointEstimate.X{1,2}(2),'r');
-xlabel(var_names{1})
-ylabel(var_names{2})
-
+discrepancyAsVariable = false; % if discrepancy is also inverted in Bayesian
+numOutput = 2; % number of outputs
 
 figure
-subplot(221)
-histogram(PostSample2D(:,1),'Normalization','probability')
-hold on
-xline(myBayesian_bothModels.Results.PostProc.PointEstimate.X{1}(1),'r');
-subplot(224)
-histogram(PostSample2D(:,2),'Normalization','probability')
-hold on
-xline(myBayesian_bothModels.Results.PostProc.PointEstimate.X{1}(2),'r');
-camroll(-90)
-subplot(223)
-scatter(PostSample2D(end-n_limit:end,1),PostSample2D(end-n_limit:end,2),1,'k')
-hold on
-xline(myBayesian_bothModels.Results.PostProc.PointEstimate.X{1}(1),'r');
-yline(myBayesian_bothModels.Results.PostProc.PointEstimate.X{1}(2),'r');
-xlabel(var_names{1})
-ylabel(var_names{2})
-
-
-
-
-
-
+if ~discrepancyAsVariable
+    Y_allDim = PostSample2D(end-n_limit:end,1:end-numOutput);
+    subplot_counter = 1;
+    for ii = 1:size(Y_allDim,2)
+        for jj = 1:size(Y_allDim,2)
+            if ii == jj % HISTOGRAM PLOT
+                Y = Y_allDim(:,ii);
+                subplot(size(Y_allDim,2),size(Y_allDim,2),subplot_counter)
+                % The width of a histogram element is computed by the Scott's rule
+                w = 3.49*std(Y)*numel(Y)^(-1/3);  % Width of a histogram element
+                nBins = max(ceil(range(Y)/w),1);     % Number of histograms
+                [hY,hX] = hist(Y,nBins);
+                % compute color for each bar
+                colorFrac = hY./max(hY);
+                colorVec = colorFrac'*colorRange(2,:) + (1-colorFrac')*colorRange(1,:);
+                normfac = 1/(sum(hY*mean(diff(hX))));
+                hY = hY*normfac;
+                bar(hX,hY,'BarWidth',1,'CData',colorVec,'FaceColor','flat','EdgeAlpha',0)
+                hold on
+                xline(myBayesian_bothModels.Results.PostProc.PointEstimate.X{1,2}(1),'r');
+                xlabel(var_names{sensitivite_param(ii)})
+                subplot_counter = subplot_counter + 1;
+                
+            elseif jj < ii % SCATTER PLOT
+                Y = Y_allDim(:,[jj ii]);
+                subplot(size(Y_allDim,2),size(Y_allDim,2),subplot_counter)
+                [N,~,~,binX,binY] = histcounts2(Y(:,1), Y(:,2));
+                [NX, NY] = size(N);
+                % loop over bins
+                CurrColorVec = nan(size(Y,1),3);
+                for kk = 1:length(N(:))
+                    [xk,yk] = ind2sub(size(N),kk);
+                    currFrac = N(xk,yk)/max(N(:));
+                    currColor = (currFrac)*colorRange(2,:) + (1-currFrac)*colorRange(1,:);
+                    currPointIds = xk == binX & yk == binY;
+                    CurrColorVec(currPointIds,:) = repmat(currColor,sum(currPointIds),1);
+                end
+                scatter(Y(:,1), Y(:,2),2,CurrColorVec);
+                % scatter(Y(:,1), Y(:,2),10,'Marker',".",'MarkerEdgeColor',[0 0 0],'MarkerEdgeAlpha',0.05);
+                xlabel(var_names{sensitivite_param(jj)})
+                ylabel(var_names{sensitivite_param(ii)})
+                subplot_counter = subplot_counter + 1;
+                
+            else % leave blank subplot
+                subplot_counter = subplot_counter + 1;
+            end
+        end
+    end
+else % show discrepancy inversion posterior
+    Y_allDim = PostSample2D(end-n_limit:end,:);
+    subplot_counter = 1;
+    for ii = 1:size(Y_allDim,2)
+        for jj = 1:size(Y_allDim,2)
+            if ii == jj % HISTOGRAM PLOT
+                Y = Y_allDim(:,ii);
+                
+                subplot(size(Y_allDim,2),size(Y_allDim,2),subplot_counter)
+                % The width of a histogram element is computed by the Scott's rule
+                w = 3.49*std(Y)*numel(Y)^(-1/3);  % Width of a histogram element
+                nBins = max(ceil(range(Y)/w),1);     % Number of histograms
+                [hY,hX] = hist(Y,nBins);
+                % compute color for each bar
+                colorFrac = hY./max(hY);
+                colorVec = colorFrac'*colorRange(2,:) + (1-colorFrac')*colorRange(1,:);
+                normfac = 1/(sum(hY*mean(diff(hX))));
+                hY = hY*normfac;
+                bar(hX,hY,'BarWidth',1,'CData',colorVec,'FaceColor','flat','EdgeAlpha',0)
+                hold on
+                xline(myBayesian_bothModels.Results.PostProc.PointEstimate.X{1,2}(1),'r');
+                xlabel(var_names{1})
+                subplot_counter = subplot_counter + 1;
+                
+            elseif jj < ii % SCATTER PLOT
+                Y = Y_allDim(:,[ii jj]);
+                subplot(size(Y_allDim,2),size(Y_allDim,2),subplot_counter)
+                [N,~,~,binX,binY] = histcounts2(Y(:,1), Y(:,2));
+                [NX, NY] = size(N);
+                % loop over bins
+                CurrColorVec = nan(size(Y,1),3);
+                for kk = 1:length(N(:))
+                    [xk,yk] = ind2sub(size(N),kk);
+                    currFrac = N(xk,yk)/max(N(:));
+                    currColor = (currFrac)*colorRange(2,:) + (1-currFrac)*colorRange(1,:);
+                    currPointIds = xk == binX & yk == binY;
+                    CurrColorVec(currPointIds,:) = repmat(currColor,sum(currPointIds),1);
+                end
+                scatter(Y(:,1), Y(:,2), 2, CurrColorVec);
+                subplot_counter = subplot_counter + 1;
+            else % leave blank
+                subplot_counter = subplot_counter + 1;
+            end
+        end
+    end
+end
 
 
 
