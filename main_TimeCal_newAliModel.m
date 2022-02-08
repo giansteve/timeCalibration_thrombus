@@ -331,7 +331,12 @@ myBayesian_bothModels = uq_createAnalysis(bayesOpts);
 
 % results are stored into myBayesian.Results
 % generate good posterior sample with
-uq_postProcessInversion(myBayesian_bothModels,'burnIn', 0.8,'pointEstimate',{'Mean','MAP'})
+uq_postProcessInversion(myBayesian_bothModels,...
+    'burnIn', 0.75,... % specify the fraction of samples discarded as burn-in
+    'pointEstimate',{'Mean','MAP'},... % compute 'Mean': empirical mean from sample; 'MAP': maximum posterior probability from sample
+    'gelmanRubin',true... % multivariate potential scale reduction factor is computed [convergence at 1]
+) 
+
 % Post-processing
 myBayesian_bothModels.Internal.FullPrior.Marginals(1).Name = 'Dc';
 myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = 'ct';
@@ -345,7 +350,13 @@ myBayesian_bothModels.Internal.FullPrior.Marginals(3).Name = var_names{3};
 myBayesian_bothModels.Internal.FullPrior.Marginals(4).Name = '$\epsilon_{HS}$';
 myBayesian_bothModels.Internal.FullPrior.Marginals(5).Name = '$\epsilon_{LS}$'; % reChange name back to original
 
-uq_display(myBayesian_bothModels)
+% uq_display(myBayesian_bothModels)
+uq_display(myBayesian_bothModels,...
+    'scatterplot','none',... % plot an M dimensional scatterpplot of the sample
+    'trace','none',... % trace plot of MCMC chains
+    'meanConvergence','all',... % convergence plot of the empirical mean
+    'acceptance',true... % acceptance ratio for all chains
+    )
 
 cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles')
 save('_testBig_TimeCal_postBayesian_AliModel00_gaussianDiscrepancy.mat','-v7.3')

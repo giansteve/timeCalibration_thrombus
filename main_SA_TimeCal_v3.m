@@ -29,6 +29,14 @@ fprintf(sprintf('min(PhiDot_c): %e \t max(PhiDot_c): %e \n',min(PhiDot_c),max(Ph
 % | ct        | 1.0e+06 | 1.0e+07 | 
 % | gamma     | 0.001   | 3       | 
 % ----------------------------------
+% initial sampling of 5000
+% ---------------------------------
+% | Parameter | min     | max     |
+% ---------------------------------
+% | Dc        | 1.0e-10 | 1.0e-06 |
+% | ct        | 2.0e+02 | 2.0e+06 | 
+% | gamma     | 0.001   | 5       | 
+% ----------------------------------
 Ns = 7000; % number of simulations
 
 % Dc
@@ -73,7 +81,7 @@ model_funct_TimeCal_v2_newModel(exp_design)
 
 
 %% :::::::::::::::::::::::::: LOG RESULTS :::::::::::::::::::::::::
-% Previous results 00:
+% Previous results 00: (02/02/2022)
 %------------------- Point estimate
 % --------------------------------------------------
 % | Parameter | Mean    | MAP     | Parameter Type |
