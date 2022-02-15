@@ -26,7 +26,7 @@ function [sigmaOutHS,sigmaOutLS] = timeCal_discrModel(humanData)
 
 SigmaOptsHS.Marginals(1).Name = '$\epsilon_{HS}$';
 SigmaOptsHS.Marginals(1).Type = 'Uniform';
-SigmaOptsHS.Marginals(1).Parameters = [0 0.1];
+SigmaOptsHS.Marginals(1).Parameters = [0 1];
 
 sigmaOutHS = uq_createInput(SigmaOptsHS);
 
@@ -54,7 +54,7 @@ sigmaOutHS = uq_createInput(SigmaOptsHS);
 
 SigmaOptsLS.Marginals(1).Name = '$\epsilon_{LS}$';
 SigmaOptsLS.Marginals(1).Type = 'Uniform';
-SigmaOptsLS.Marginals(1).Parameters = [0 0.1];
+SigmaOptsLS.Marginals(1).Parameters = [0 1];
 sigmaOutLS = uq_createInput(SigmaOptsLS);
 
 

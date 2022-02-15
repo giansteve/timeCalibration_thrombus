@@ -88,13 +88,12 @@ GM_printEPS(400,400,'SA_LS')
 cd(root_destination)
 
 %% prepare for Bayesian Inverse problem
-inversion_type = 'MH';
-
+inversion_type = 'AIES';
+rng(100)
 clear('bayesOpts','myPriorDist','ForwardModels','myData','discrepancyOpts','myBayesian_bothModels')
 clc
 
-if strcmpi(inversion_type,'MH')
-    % 1. create PRIOR: the input PDF of my model parameters, considering the SA
+% 1. create PRIOR: the input PDF of my model parameters, considering the SA
     % results. We want to find the POSTERIOR of only the sensitivite parameters
     bounds_prior = [min(exp_design); max(exp_design)];
     sensitivite_param = [1 6];
@@ -167,14 +166,15 @@ if strcmpi(inversion_type,'MH')
     discrepancyOpts(2).Type = 'Gaussian';
     discrepancyOpts(2).Prior = sigmaOptsLS;
     bayesOpts.Discrepancy = discrepancyOpts;
-    
-    % chose the solver
+
+if strcmpi(inversion_type,'MH')
+    % 5. chose the solver
     bayesOpts.solver.Type = 'MCMC';
     bayesOpts.solver.MCMC.Sampler = 'MH'; % metropolis-hasting
     bayesOpts.solver.MCMC.Steps = 500000; % scalar to impose number of iterations
     bayesOpts.solver.MCMC.NChains = 250; % number of chains: starting point in the input domain per dimension
     % live visualization, enable only for mistuning check
-    bayesOpts.solver.MCMC.Visualize.Parameters = [1;2;3];
+    bayesOpts.solver.MCMC.Visualize.Parameters = [1;2];
     bayesOpts.solver.MCMC.Visualize.Interval = 250; % every xx steps
     % RUN IT FORREST
     myBayesian_bothModels = uq_createAnalysis(bayesOpts);
@@ -189,14 +189,14 @@ if strcmpi(inversion_type,'MH')
     
     % Post-processing
     myBayesian_bothModels.Internal.FullPrior.Marginals(1).Name = 'Dc';
-    myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = 'ct';
+%     myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = 'ct';
     myBayesian_bothModels.Internal.FullPrior.Marginals(3).Name = 'gamma';
     myBayesian_bothModels.Internal.FullPrior.Marginals(4).Name = 'e_HS';
     myBayesian_bothModels.Internal.FullPrior.Marginals(5).Name = 'e_LS'; % reChange name back to original
     uq_print(myBayesian_bothModels)
     myBayesian_bothModels.Internal.FullPrior.Marginals(1).Name = var_names{1};
-    myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = var_names{2};
-    myBayesian_bothModels.Internal.FullPrior.Marginals(3).Name = var_names{3};
+%     myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = var_names{3};
+    myBayesian_bothModels.Internal.FullPrior.Marginals(3).Name = var_names{6};
     myBayesian_bothModels.Internal.FullPrior.Marginals(4).Name = '$\epsilon_{HS}$';
     myBayesian_bothModels.Internal.FullPrior.Marginals(5).Name = '$\epsilon_{LS}$'; % reChange name back to original
     
@@ -208,13 +208,50 @@ if strcmpi(inversion_type,'MH')
         'acceptance',true... % acceptance ratio for all chains
         )
     
-elseif strcmpi(inversion_type,'aies')
+elseif strcmpi(inversion_type,'aies') % AIES algorithm
+    % 5. chose the solver
+    bayesOpts.solver.Type = 'MCMC';
+    bayesOpts.solver.MCMC.Sampler = 'AIES'; % metropolis-hasting
+    bayesOpts.solver.MCMC.a = 2; % scalar for the AIES solver
+    % live visualization, enable only for mistuning check
+    bayesOpts.solver.MCMC.Visualize.Parameters = [1;2];
+    bayesOpts.solver.MCMC.Visualize.Interval = 10; % every xx steps
+    % RUN IT FORREST
+    myBayesian_bothModels = uq_createAnalysis(bayesOpts);
     
+    % results are stored into myBayesian.Results
+    % generate good posterior sample with
+    uq_postProcessInversion(myBayesian_bothModels,...
+        'burnIn', 0.60,... % specify the fraction of samples discarded as burn-in
+        'pointEstimate',{'Mean','MAP'},... % compute 'Mean': empirical mean from sample; 'MAP': maximum posterior probability from sample
+        'gelmanRubin',true... % multivariate potential scale reduction factor is computed [convergence at 1]
+        )
+    
+    % Post-processing
+    myBayesian_bothModels.Internal.FullPrior.Marginals(1).Name = 'Dc';
+%     myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = 'ct';
+    myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = 'gamma';
+    myBayesian_bothModels.Internal.FullPrior.Marginals(3).Name = 'e_HS';
+    myBayesian_bothModels.Internal.FullPrior.Marginals(4).Name = 'e_LS'; % reChange name back to original
+    uq_print(myBayesian_bothModels)
+    myBayesian_bothModels.Internal.FullPrior.Marginals(1).Name = var_names{1};
+%     myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = var_names{3};
+    myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = var_names{6};
+    myBayesian_bothModels.Internal.FullPrior.Marginals(3).Name = '$\epsilon_{HS}$';
+    myBayesian_bothModels.Internal.FullPrior.Marginals(4).Name = '$\epsilon_{LS}$'; % reChange name back to original
+    
+    % uq_display(myBayesian_bothModels)
+    uq_display(myBayesian_bothModels,...
+        'scatterplot','all',... % plot an M dimensional scatterpplot of the sample
+        'trace','none',... % trace plot of MCMC chains
+        'meanConvergence','all',... % convergence plot of the empirical mean
+        'acceptance',true... % acceptance ratio for all chains
+        )
 end
 
 
 cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles')
-save('_testBig_TimeCal_postBayesian_AliModel00_gaussianDiscrepancy.mat','-v7.3')
+save('_testAIES_TimeCal_postBayesian_AliModel00_gaussianDiscrepancy.mat','-v7.3')
 cd(root_destination)
 
 %% Plot Bayesian results
@@ -230,7 +267,7 @@ PostSample2D = reshape(permute(PostSample3D, [2 1 3]), size(PostSample3D, 2), []
 
 colorRange = [.6 .6 .6;
     0.0 0.0 0.0];
-n_limit = 1000000;
+n_limit = 10000;
 discrepancyAsVariable = false; % if discrepancy is also inverted in Bayesian
 numOutput = 2; % number of outputs
 

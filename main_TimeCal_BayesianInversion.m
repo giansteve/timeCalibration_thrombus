@@ -89,92 +89,92 @@ cd(root_destination)
 
 %% prepare for Bayesian Inverse problem
 inversion_type = 'MH';
-
+rng(100)
 clear('bayesOpts','myPriorDist','ForwardModels','myData','discrepancyOpts','myBayesian_bothModels')
 clc
 
-if strcmpi(inversion_type,'MH')
-    % 1. create PRIOR: the input PDF of my model parameters, considering the SA
-    % results. We want to find the POSTERIOR of only the sensitivite parameters
-    bounds_prior = [min(exp_design); max(exp_design)];
-    sensitivite_param = [1 6];
-    nonSensitive_param = [2 3 4 5 7];
-    for m = 1:M
-        if logical(sum(eq(m,nonSensitive_param)))
-            prior.Marginals(m).Name = var_names{m};
-            prior.Marginals(m).Type = 'Constant';
-            prior.Marginals(m).Parameters = mean(bounds_prior(:,m));
-        else
-            prior.Marginals(m).Name = var_names{m};
-            prior.Marginals(m).Type = 'Uniform';
-            prior.Marginals(m).Parameters = bounds_prior(:,m);
-        end
+% 1. create PRIOR: the input PDF of my model parameters, considering the SA
+% results. We want to find the POSTERIOR of only the sensitivite parameters
+bounds_prior = [min(exp_design); max(exp_design)];
+sensitivite_param = [1 6];
+nonSensitive_param = [2 3 4 5 7];
+for m = 1:M
+    if logical(sum(eq(m,nonSensitive_param)))
+        prior.Marginals(m).Name = var_names{m};
+        prior.Marginals(m).Type = 'Constant';
+        prior.Marginals(m).Parameters = mean(bounds_prior(:,m));
+    else
+        prior.Marginals(m).Name = var_names{m};
+        prior.Marginals(m).Type = 'Uniform';
+        prior.Marginals(m).Parameters = bounds_prior(:,m);
     end
-    myPriorDist = uq_createInput(prior);
-    
-    % TRY TO COMPUTE FROM SECOND TIME STEP
-    
-    % 2. give forward model, in my case the PCE surrogates
-    % bayesOpts_HS.ForwardModel = PCE_HS;
-    % bayesOpts_LS.ForwardModel = PCE_LS;
-    ForwardModels(1).Model = PCE_HS;
-    ForwardModels(1).PMap = [1 2 3 4 5 6 7];
-    ForwardModels(2).Model = PCE_LS;
-    ForwardModels(2).PMap = [1 2 3 4 5 6 7];
-    bayesOpts.ForwardModel = ForwardModels;
-    
-    % 3. provide measurements
-    % myData_HS.Name = 'H_S';
-    % myData_HS.y = human_thr.H_S(:,1); % column vectors
-    % myData_LS.Name = 'L_S';
-    % myData_LS.y = human_thr.L_S(:,1); % column vectors
-    myData(1).Name = '$H_S$';
-    myData(1).y = human_thr.H_S(:,1)'; % column vectors
-    myData(1).MOMap = [1 1 1 1 1 1 1;...    % Model ID
-        1 2 3 4 5 6 7];      % Output ID
-    myData(2).Name = '$L_S$';
-    myData(2).y = human_thr.L_S(:,1)'; % column vectors
-    myData(2).MOMap = [2 2 2 2 2 2 2;...    % Model ID
-        1 2 3 4 5 6 7];      % Output ID
-    
-    % 4. Perform Bayesiam analysis
-    % bayesOpts_HS.Type = 'Inversion';
-    % bayesOpts_HS.Data = myData_HS;
-    % bayesOpts_LS.Type = 'Inversion';
-    % bayesOpts_LS.Data = myData_LS;
-    bayesOpts.Type = 'Inversion';
-    bayesOpts.Data = myData;
-    bayesOpts.Prior = myPriorDist;
-    
-    % 4.1 give the discrepancy
-    % :::::::::::::::: ORIGINAL :::::::::::::::::::::::
-    % Discrepancy is the STD of the data. The discrepancy simulates the measurement error!
-    % In case of multiple outputs, the discrepancy has the shape of a vector
-    % whose dimension is equal to the number of dimensions. In this case: 1x7
-    % :::::::::::::::: 28/01/22 UPDATE ::::::::::::::::
-    % the discrepancy model has known mean and std at each time step. So we
-    % need to build it accordingly.
-    % :::::::::::::::: 28/01/22 UPDATE 2 ::::::::::::::
-    % The discrepancy is the error between the computational model and the
-    % data.
-    % % discrepancyOpts(1).Type = 'Gaussian';
-    % % discrepancyOpts(1).Parameters = (human_thr.H_S(:,2)').^2; % remember to square it
-    % % discrepancyOpts(2).Type = 'Gaussian';
-    % % discrepancyOpts(2).Parameters = (human_thr.L_S(:,2)').^2; % remember to square it
-    [sigmaOptsHS,sigmaOptsLS] = timeCal_discrModel(human_thr);
-    discrepancyOpts(1).Type = 'Gaussian';
-    discrepancyOpts(1).Prior = sigmaOptsHS;
-    discrepancyOpts(2).Type = 'Gaussian';
-    discrepancyOpts(2).Prior = sigmaOptsLS;
-    bayesOpts.Discrepancy = discrepancyOpts;
-    
-    % chose the solver
+end
+myPriorDist = uq_createInput(prior);
+
+% TRY TO COMPUTE FROM SECOND TIME STEP
+
+% 2. give forward model, in my case the PCE surrogates
+% bayesOpts_HS.ForwardModel = PCE_HS;
+% bayesOpts_LS.ForwardModel = PCE_LS;
+ForwardModels(1).Model = PCE_HS;
+ForwardModels(1).PMap = [1 2 3 4 5 6 7];
+ForwardModels(2).Model = PCE_LS;
+ForwardModels(2).PMap = [1 2 3 4 5 6 7];
+bayesOpts.ForwardModel = ForwardModels;
+
+% 3. provide measurements
+% myData_HS.Name = 'H_S';
+% myData_HS.y = human_thr.H_S(:,1); % column vectors
+% myData_LS.Name = 'L_S';
+% myData_LS.y = human_thr.L_S(:,1); % column vectors
+myData(1).Name = '$H_S$';
+myData(1).y = human_thr.H_S(:,1)'; % column vectors
+myData(1).MOMap = [1 1 1 1 1 1 1;...    % Model ID
+    1 2 3 4 5 6 7];      % Output ID
+myData(2).Name = '$L_S$';
+myData(2).y = human_thr.L_S(:,1)'; % column vectors
+myData(2).MOMap = [2 2 2 2 2 2 2;...    % Model ID
+    1 2 3 4 5 6 7];      % Output ID
+
+% 4. Perform Bayesiam analysis
+% bayesOpts_HS.Type = 'Inversion';
+% bayesOpts_HS.Data = myData_HS;
+% bayesOpts_LS.Type = 'Inversion';
+% bayesOpts_LS.Data = myData_LS;
+bayesOpts.Type = 'Inversion';
+bayesOpts.Data = myData;
+bayesOpts.Prior = myPriorDist;
+
+% 4.1 give the discrepancy
+% :::::::::::::::: ORIGINAL :::::::::::::::::::::::
+% Discrepancy is the STD of the data. The discrepancy simulates the measurement error!
+% In case of multiple outputs, the discrepancy has the shape of a vector
+% whose dimension is equal to the number of dimensions. In this case: 1x7
+% :::::::::::::::: 28/01/22 UPDATE ::::::::::::::::
+% the discrepancy model has known mean and std at each time step. So we
+% need to build it accordingly.
+% :::::::::::::::: 28/01/22 UPDATE 2 ::::::::::::::
+% The discrepancy is the error between the computational model and the
+% data.
+% % discrepancyOpts(1).Type = 'Gaussian';
+% % discrepancyOpts(1).Parameters = (human_thr.H_S(:,2)').^2; % remember to square it
+% % discrepancyOpts(2).Type = 'Gaussian';
+% % discrepancyOpts(2).Parameters = (human_thr.L_S(:,2)').^2; % remember to square it
+[sigmaOptsHS,sigmaOptsLS] = timeCal_discrModel(human_thr);
+discrepancyOpts(1).Type = 'Gaussian';
+discrepancyOpts(1).Prior = sigmaOptsHS;
+discrepancyOpts(2).Type = 'Gaussian';
+discrepancyOpts(2).Prior = sigmaOptsLS;
+bayesOpts.Discrepancy = discrepancyOpts;
+
+if strcmpi(inversion_type,'MH')
+    % 5. chose the solver
     bayesOpts.solver.Type = 'MCMC';
     bayesOpts.solver.MCMC.Sampler = 'MH'; % metropolis-hasting
     bayesOpts.solver.MCMC.Steps = 500000; % scalar to impose number of iterations
     bayesOpts.solver.MCMC.NChains = 250; % number of chains: starting point in the input domain per dimension
     % live visualization, enable only for mistuning check
-    bayesOpts.solver.MCMC.Visualize.Parameters = [1;2;3];
+    bayesOpts.solver.MCMC.Visualize.Parameters = [1;2];
     bayesOpts.solver.MCMC.Visualize.Interval = 250; % every xx steps
     % RUN IT FORREST
     myBayesian_bothModels = uq_createAnalysis(bayesOpts);
@@ -189,16 +189,16 @@ if strcmpi(inversion_type,'MH')
     
     % Post-processing
     myBayesian_bothModels.Internal.FullPrior.Marginals(1).Name = 'Dc';
-    myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = 'ct';
-    myBayesian_bothModels.Internal.FullPrior.Marginals(3).Name = 'gamma';
-    myBayesian_bothModels.Internal.FullPrior.Marginals(4).Name = 'e_HS';
-    myBayesian_bothModels.Internal.FullPrior.Marginals(5).Name = 'e_LS'; % reChange name back to original
+    %     myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = 'ct';
+    myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = 'gamma';
+    myBayesian_bothModels.Internal.FullPrior.Marginals(3).Name = 'e_HS';
+    myBayesian_bothModels.Internal.FullPrior.Marginals(4).Name = 'e_LS'; % reChange name back to original
     uq_print(myBayesian_bothModels)
     myBayesian_bothModels.Internal.FullPrior.Marginals(1).Name = var_names{1};
-    myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = var_names{2};
-    myBayesian_bothModels.Internal.FullPrior.Marginals(3).Name = var_names{3};
-    myBayesian_bothModels.Internal.FullPrior.Marginals(4).Name = '$\epsilon_{HS}$';
-    myBayesian_bothModels.Internal.FullPrior.Marginals(5).Name = '$\epsilon_{LS}$'; % reChange name back to original
+    %     myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = var_names{3};
+    myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = var_names{6};
+    myBayesian_bothModels.Internal.FullPrior.Marginals(3).Name = '$\epsilon_{HS}$';
+    myBayesian_bothModels.Internal.FullPrior.Marginals(4).Name = '$\epsilon_{LS}$'; % reChange name back to original
     
     % uq_display(myBayesian_bothModels)
     uq_display(myBayesian_bothModels,...
@@ -208,14 +208,59 @@ if strcmpi(inversion_type,'MH')
         'acceptance',true... % acceptance ratio for all chains
         )
     
-elseif strcmpi(inversion_type,'aies')
+    % save
+    cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_7000\MH')
+    save('_testMH_TimeCal_postBayesian_AliModel00_gaussianDiscrepancy.mat','-v7.3')
+    cd(root_destination)
     
+elseif strcmpi(inversion_type,'aies') % AIES algorithm
+    % 5. chose the solver
+    bayesOpts.solver.Type = 'MCMC';
+    bayesOpts.solver.MCMC.Sampler = 'AIES'; % metropolis-hasting
+    bayesOpts.solver.MCMC.a = 2; % scalar for the AIES solver
+    % live visualization, enable only for mistuning check
+    bayesOpts.solver.MCMC.Visualize.Parameters = [1;2];
+    bayesOpts.solver.MCMC.Visualize.Interval = 10; % every xx steps
+    % RUN IT FORREST
+    myBayesian_bothModels = uq_createAnalysis(bayesOpts);
+    
+    % results are stored into myBayesian.Results
+    % generate good posterior sample with
+    uq_postProcessInversion(myBayesian_bothModels,...
+        'burnIn', 0.60,... % specify the fraction of samples discarded as burn-in
+        'pointEstimate',{'Mean','MAP'},... % compute 'Mean': empirical mean from sample; 'MAP': maximum posterior probability from sample
+        'gelmanRubin',true... % multivariate potential scale reduction factor is computed [convergence at 1]
+        )
+    
+    % Post-processing
+    myBayesian_bothModels.Internal.FullPrior.Marginals(1).Name = 'Dc';
+    %     myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = 'ct';
+    myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = 'gamma';
+    myBayesian_bothModels.Internal.FullPrior.Marginals(3).Name = 'e_HS';
+    myBayesian_bothModels.Internal.FullPrior.Marginals(4).Name = 'e_LS'; % reChange name back to original
+    uq_print(myBayesian_bothModels)
+    myBayesian_bothModels.Internal.FullPrior.Marginals(1).Name = var_names{1};
+    %     myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = var_names{3};
+    myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = var_names{6};
+    myBayesian_bothModels.Internal.FullPrior.Marginals(3).Name = '$\epsilon_{HS}$';
+    myBayesian_bothModels.Internal.FullPrior.Marginals(4).Name = '$\epsilon_{LS}$'; % reChange name back to original
+    
+    % uq_display(myBayesian_bothModels)
+    uq_display(myBayesian_bothModels,...
+        'scatterplot','all',... % plot an M dimensional scatterpplot of the sample
+        'trace','none',... % trace plot of MCMC chains
+        'meanConvergence','all',... % convergence plot of the empirical mean
+        'acceptance',true... % acceptance ratio for all chains
+        )
+    
+    % save
+    cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_7000\AIES')
+    save('_testAIES_TimeCal_postBayesian_AliModel00_gaussianDiscrepancy.mat','-v7.3')
+    cd(root_destination)
 end
 
 
-cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles')
-save('_testBig_TimeCal_postBayesian_AliModel00_gaussianDiscrepancy.mat','-v7.3')
-cd(root_destination)
+
 
 %% Plot Bayesian results
 % Copying data int local variables to be used as input for
@@ -230,7 +275,7 @@ PostSample2D = reshape(permute(PostSample3D, [2 1 3]), size(PostSample3D, 2), []
 
 colorRange = [.6 .6 .6;
     0.0 0.0 0.0];
-n_limit = 1000000;
+n_limit = 12000;
 discrepancyAsVariable = false; % if discrepancy is also inverted in Bayesian
 numOutput = 2; % number of outputs
 
