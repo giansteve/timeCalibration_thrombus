@@ -88,7 +88,7 @@ GM_printEPS(400,400,'SA_LS')
 cd(root_destination)
 
 %% prepare for Bayesian Inverse problem
-inversion_type = 'MH';
+inversion_type = 'AIES';
 rng(100)
 clear('bayesOpts','myPriorDist','ForwardModels','myData','discrepancyOpts','myBayesian_bothModels')
 clc
@@ -203,7 +203,7 @@ if strcmpi(inversion_type,'MH')
     % uq_display(myBayesian_bothModels)
     uq_display(myBayesian_bothModels,...
         'scatterplot','none',... % plot an M dimensional scatterpplot of the sample
-        'trace','none',... % trace plot of MCMC chains
+        'trace','all',... % trace plot of MCMC chains
         'meanConvergence','all',... % convergence plot of the empirical mean
         'acceptance',true... % acceptance ratio for all chains
         )
@@ -217,10 +217,12 @@ elseif strcmpi(inversion_type,'aies') % AIES algorithm
     % 5. chose the solver
     bayesOpts.solver.Type = 'MCMC';
     bayesOpts.solver.MCMC.Sampler = 'AIES'; % metropolis-hasting
+    bayesOpts.solver.MCMC.Steps = 2500; % default: 300
+    bayesOpts.solver.MCMC.NChains = 350; % default: 100
     bayesOpts.solver.MCMC.a = 2; % scalar for the AIES solver
     % live visualization, enable only for mistuning check
     bayesOpts.solver.MCMC.Visualize.Parameters = [1;2];
-    bayesOpts.solver.MCMC.Visualize.Interval = 10; % every xx steps
+    bayesOpts.solver.MCMC.Visualize.Interval = 50; % every xx steps
     % RUN IT FORREST
     myBayesian_bothModels = uq_createAnalysis(bayesOpts);
     
@@ -248,14 +250,14 @@ elseif strcmpi(inversion_type,'aies') % AIES algorithm
     % uq_display(myBayesian_bothModels)
     uq_display(myBayesian_bothModels,...
         'scatterplot','all',... % plot an M dimensional scatterpplot of the sample
-        'trace','none',... % trace plot of MCMC chains
+        'trace','all',... % trace plot of MCMC chains
         'meanConvergence','all',... % convergence plot of the empirical mean
         'acceptance',true... % acceptance ratio for all chains
         )
     
     % save
     cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_7000\AIES')
-    save('_testAIES_TimeCal_postBayesian_AliModel00_gaussianDiscrepancy.mat','-v7.3')
+    save('_testAIES_loadsOfSteps_TimeCal_postBayesian_AliModel00_gaussianDiscrepancy.mat','-v7.3')
     cd(root_destination)
 end
 
