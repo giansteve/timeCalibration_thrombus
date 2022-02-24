@@ -88,7 +88,7 @@ GM_printEPS(400,400,'SA_LS')
 cd(root_destination)
 
 %% prepare for Bayesian Inverse problem
-inversion_type = 'AIES';
+inversion_type = 'MH';
 rng(100)
 clear('bayesOpts','myPriorDist','ForwardModels','myData','discrepancyOpts','myBayesian_bothModels')
 clc
@@ -171,7 +171,7 @@ if strcmpi(inversion_type,'MH')
     % 5. chose the solver
     bayesOpts.solver.Type = 'MCMC';
     bayesOpts.solver.MCMC.Sampler = 'MH'; % metropolis-hasting
-    bayesOpts.solver.MCMC.Steps = 500000; % scalar to impose number of iterations
+    bayesOpts.solver.MCMC.Steps = 5000; % scalar to impose number of iterations
     bayesOpts.solver.MCMC.NChains = 250; % number of chains: starting point in the input domain per dimension
     % live visualization, enable only for mistuning check
     bayesOpts.solver.MCMC.Visualize.Parameters = [1;2];
@@ -182,7 +182,7 @@ if strcmpi(inversion_type,'MH')
     % results are stored into myBayesian.Results
     % generate good posterior sample with
     uq_postProcessInversion(myBayesian_bothModels,...
-        'burnIn', 0.75,... % specify the fraction of samples discarded as burn-in
+        'burnIn', 0.60,... % specify the fraction of samples discarded as burn-in
         'pointEstimate',{'Mean','MAP'},... % compute 'Mean': empirical mean from sample; 'MAP': maximum posterior probability from sample
         'gelmanRubin',true... % multivariate potential scale reduction factor is computed [convergence at 1]
         )
@@ -210,15 +210,15 @@ if strcmpi(inversion_type,'MH')
     
     % save
     cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_7000\MH')
-    save('_testMH_TimeCal_postBayesian_AliModel00_gaussianDiscrepancy.mat','-v7.3')
+    save('_testMH_5k_TimeCal_postBayesian_AliModel00_gaussianDiscrepancy.mat','-v7.3')
     cd(root_destination)
     
 elseif strcmpi(inversion_type,'aies') % AIES algorithm
     % 5. chose the solver
     bayesOpts.solver.Type = 'MCMC';
     bayesOpts.solver.MCMC.Sampler = 'AIES'; % metropolis-hasting
-    bayesOpts.solver.MCMC.Steps = 2500; % default: 300
-    bayesOpts.solver.MCMC.NChains = 350; % default: 100
+    bayesOpts.solver.MCMC.Steps = 10000; % default: 300
+    bayesOpts.solver.MCMC.NChains = 100; % default: 100
     bayesOpts.solver.MCMC.a = 2; % scalar for the AIES solver
     % live visualization, enable only for mistuning check
     bayesOpts.solver.MCMC.Visualize.Parameters = [1;2];
@@ -257,7 +257,7 @@ elseif strcmpi(inversion_type,'aies') % AIES algorithm
     
     % save
     cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_7000\AIES')
-    save('_testAIES_loadsOfSteps_TimeCal_postBayesian_AliModel00_gaussianDiscrepancy.mat','-v7.3')
+    save('_testAIES_pleaseBeTheLastOne_TimeCal_postBayesian_AliModel00_gaussianDiscrepancy.mat','-v7.3')
     cd(root_destination)
 end
 
@@ -275,15 +275,18 @@ myPointEstimate = myBayesian_bothModels.Results.PostProc.PointEstimate.ForwardRu
 PostSample3D = myBayesian_bothModels.Results.PostProc.PostSample;
 PostSample2D = reshape(permute(PostSample3D, [2 1 3]), size(PostSample3D, 2), []).';
 
+% modify limits
+PostSample2D(PostSample2D(:,1)>4e-7,:) = [];
+
 colorRange = [.6 .6 .6;
     0.0 0.0 0.0];
-n_limit = 12000;
-discrepancyAsVariable = false; % if discrepancy is also inverted in Bayesian
+n_limit = 250000;
+discrepancyAsVariable = true; % if discrepancy is also inverted in Bayesian
 numOutput = 2; % number of outputs
 
 figure
 if ~discrepancyAsVariable
-    Y_allDim = PostSample2D(end-n_limit:end,1:end-numOutput);
+    Y_allDim = PostSample2D(randi(size(PostSample2D,1),1,n_limit),1:end-numOutput);
     subplot_counter = 1;
     for ii = 1:size(Y_allDim,2)
         for jj = 1:size(Y_allDim,2)
@@ -301,12 +304,12 @@ if ~discrepancyAsVariable
                 hY = hY*normfac;
                 bar(hX,hY,'BarWidth',1,'CData',colorVec,'FaceColor','flat','EdgeAlpha',0)
                 hold on
-                xline(myBayesian_bothModels.Results.PostProc.PointEstimate.X{1,2}(1),'r');
+                %                 xline(myBayesian_bothModels.Results.PostProc.PointEstimate.X{1,2}(1),'r');
                 xlabel(var_names{sensitivite_param(ii)})
                 subplot_counter = subplot_counter + 1;
                 
             elseif jj < ii % SCATTER PLOT
-                Y = Y_allDim(:,[jj ii]);
+                Y = Y_allDim(randi(size(PostSample2D,1),1,n_limit),[jj ii]);
                 subplot(size(Y_allDim,2),size(Y_allDim,2),subplot_counter)
                 [N,~,~,binX,binY] = histcounts2(Y(:,1), Y(:,2));
                 [NX, NY] = size(N);
@@ -331,18 +334,19 @@ if ~discrepancyAsVariable
         end
     end
 else % show discrepancy inversion posterior
-    Y_allDim = PostSample2D(end-n_limit:end,:);
+    Y_allDim = PostSample2D(randi(size(PostSample2D,1),1,n_limit),:);
     subplot_counter = 1;
     for ii = 1:size(Y_allDim,2)
         for jj = 1:size(Y_allDim,2)
             if ii == jj % HISTOGRAM PLOT
                 Y = Y_allDim(:,ii);
-                
-                subplot(size(Y_allDim,2),size(Y_allDim,2),subplot_counter)
+                subPlotIdx_diag = diag(reshape( 1:(size(Y_allDim,2)^2),size(Y_allDim,2),size(Y_allDim,2)));
+                subplot(size(Y_allDim,2),size(Y_allDim,2),subPlotIdx_diag(ii))
                 % The width of a histogram element is computed by the Scott's rule
                 w = 3.49*std(Y)*numel(Y)^(-1/3);  % Width of a histogram element
                 nBins = max(ceil(range(Y)/w),1);     % Number of histograms
                 [hY,hX] = hist(Y,nBins);
+                [~,idx_max] = max(hY);
                 % compute color for each bar
                 colorFrac = hY./max(hY);
                 colorVec = colorFrac'*colorRange(2,:) + (1-colorFrac')*colorRange(1,:);
@@ -350,13 +354,20 @@ else % show discrepancy inversion posterior
                 hY = hY*normfac;
                 bar(hX,hY,'BarWidth',1,'CData',colorVec,'FaceColor','flat','EdgeAlpha',0)
                 hold on
-                xline(myBayesian_bothModels.Results.PostProc.PointEstimate.X{1,2}(1),'r');
-                xlabel(var_names{1})
+                maxProb_var(subplot_counter) = hX(idx_max);
+                xline(maxProb_var(subplot_counter),'r','LineWidth',1);
+                %                 xline(myBayesian_bothModels.Results.PostProc.PointEstimate.X{1,2}(1),'r');
+                xlabel(myBayesian_bothModels.Internal.FullPrior.Marginals(ii).Name)
                 subplot_counter = subplot_counter + 1;
-                
-            elseif jj < ii % SCATTER PLOT
+            end
+        end
+    end
+    for ii = 1:size(Y_allDim,2)
+        for jj = 1:size(Y_allDim,2)
+            if jj < ii % SCATTER PLOT
                 Y = Y_allDim(:,[ii jj]);
-                subplot(size(Y_allDim,2),size(Y_allDim,2),subplot_counter)
+                subPlotIdx = reshape( 1:(size(Y_allDim,2)^2),size(Y_allDim,2),size(Y_allDim,2));
+                subplot(size(Y_allDim,2),size(Y_allDim,2),subPlotIdx(jj,ii))
                 [N,~,~,binX,binY] = histcounts2(Y(:,1), Y(:,2));
                 [NX, NY] = size(N);
                 % loop over bins
@@ -369,6 +380,8 @@ else % show discrepancy inversion posterior
                     CurrColorVec(currPointIds,:) = repmat(currColor,sum(currPointIds),1);
                 end
                 scatter(Y(:,1), Y(:,2), 2, CurrColorVec);
+                xline(maxProb_var(ii),'r','LineWidth',1);
+                yline(maxProb_var(jj),'r','LineWidth',1);
                 subplot_counter = subplot_counter + 1;
             else % leave blank
                 subplot_counter = subplot_counter + 1;
@@ -377,12 +390,75 @@ else % show discrepancy inversion posterior
     end
 end
 
+%% Inference of Posterior distribution
+iOpts.Inference.Data = PostSample2D(randi(size(PostSample2D,1),1,n_limit),[1 2]);
+iOpts.Copula.Type = 'auto';
+% iOpts.Inference.PairIndepTest = 0.05;
+PosteriorMarginal = uq_createInput(iOpts);
+posteriorSample = uq_getSample(PosteriorMarginal,20000,'lhs');
 
-
-
-
-
-
+%%
+figure
+PosteriorData = iOpts.Inference.Data;
+inferredSample = posteriorSample;
+subplot_counter = 1;
+for ii = 1:size(PosteriorData,2)
+    for jj = 1:size(PosteriorData,2)
+        if ii == jj % HISTOGRAM PLOT
+            Y = PosteriorData(:,ii);
+            Y_inf = inferredSample(:,ii);
+            subPlotIdx_diag = diag(reshape( 1:(size(PosteriorData,2)^2),size(PosteriorData,2),size(PosteriorData,2)));
+            subplot(size(PosteriorData,2),size(PosteriorData,2),subPlotIdx_diag(ii))
+            % - Posterior Data -
+            % The width of a histogram element is computed by the Scott's rule
+            w = 3.49*std(Y)*numel(Y)^(-1/3);  % Width of a histogram element
+            nBins = max(ceil(range(Y)/w),1);     % Number of histograms
+            [hY,hX] = hist(Y,nBins);
+            [~,idx_max] = max(hY);
+            normfac = 1/(sum(hY*mean(diff(hX))));
+            hY = hY*normfac;
+            plot(hX,hY,'k--')
+            hold on
+            maxProb_var(subplot_counter) = hX(idx_max);
+            xline(maxProb_var(subplot_counter),'k:','LineWidth',1);
+            xlabel(myBayesian_bothModels.Internal.FullPrior.Marginals(ii).Name)
+            % - inferred sample - 
+            % The width of a histogram element is computed by the Scott's rule
+            w = 3.49*std(Y_inf)*numel(Y_inf)^(-1/3);  % Width of a histogram element
+            nBins = max(ceil(range(Y_inf)/w),1);     % Number of histograms
+            [hY,hX] = hist(Y_inf,nBins);
+            [~,idx_max] = max(hY);
+            normfac = 1/(sum(hY*mean(diff(hX))));
+            hY = hY*normfac;
+            plot(hX,hY,'k')
+            hold on
+            maxProb_var(subplot_counter) = hX(idx_max);
+            xline(maxProb_var(subplot_counter),'k-','LineWidth',1);
+            xlabel(myBayesian_bothModels.Internal.FullPrior.Marginals(ii).Name)
+            subplot_counter = subplot_counter + 1;
+        end
+    end
+end
+for ii = 1:size(PosteriorData,2)
+    for jj = 1:size(PosteriorData,2)
+        if jj < ii % SCATTER PLOT
+            Y = PosteriorData(:,[ii jj]);
+            Y_inf = inferredSample(:,[ii jj]);
+            % - Posterior sample - 
+            subPlotIdx = reshape( 1:(size(PosteriorData,2)^2),size(PosteriorData,2),size(PosteriorData,2));
+            subplot(size(PosteriorData,2),size(PosteriorData,2),subPlotIdx(jj,ii))
+            scatter(Y(:,1), Y(:,2), 1, [.5 .5 .5]);
+            hold on
+            % - inferred sample - 
+            scatter(Y_inf(:,1), Y_inf(:,2), 1, 'k');
+            xlabel(myBayesian_bothModels.Internal.FullPrior.Marginals(1).Name)
+            ylabel(myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name)
+            subplot_counter = subplot_counter + 1;
+        else % leave blank
+            subplot_counter = subplot_counter + 1;
+        end
+    end
+end
 
 
 
