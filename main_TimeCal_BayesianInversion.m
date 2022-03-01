@@ -280,7 +280,7 @@ PostSample2D(PostSample2D(:,1)>4e-7,:) = [];
 
 colorRange = [.6 .6 .6;
     0.0 0.0 0.0];
-n_limit = 250000;
+n_limit = 25000;
 discrepancyAsVariable = true; % if discrepancy is also inverted in Bayesian
 numOutput = 2; % number of outputs
 
@@ -391,13 +391,13 @@ else % show discrepancy inversion posterior
 end
 
 %% Inference of Posterior distribution
+n_limit = 50000;
 iOpts.Inference.Data = PostSample2D(randi(size(PostSample2D,1),1,n_limit),[1 2]);
 iOpts.Copula.Type = 'auto';
-% iOpts.Inference.PairIndepTest = 0.05;
+% iOpts.Marginals(2).Type = {'Weibull','Gumbel'};
 PosteriorMarginal = uq_createInput(iOpts);
-posteriorSample = uq_getSample(PosteriorMarginal,20000,'lhs');
-
-%%
+posteriorSample = uq_getSample(PosteriorMarginal,10000,'lhs');
+%
 figure
 PosteriorData = iOpts.Inference.Data;
 inferredSample = posteriorSample;
@@ -422,7 +422,7 @@ for ii = 1:size(PosteriorData,2)
             maxProb_var(subplot_counter) = hX(idx_max);
             xline(maxProb_var(subplot_counter),'k:','LineWidth',1);
             xlabel(myBayesian_bothModels.Internal.FullPrior.Marginals(ii).Name)
-            % - inferred sample - 
+            % - inferred sample -
             % The width of a histogram element is computed by the Scott's rule
             w = 3.49*std(Y_inf)*numel(Y_inf)^(-1/3);  % Width of a histogram element
             nBins = max(ceil(range(Y_inf)/w),1);     % Number of histograms
@@ -444,12 +444,12 @@ for ii = 1:size(PosteriorData,2)
         if jj < ii % SCATTER PLOT
             Y = PosteriorData(:,[ii jj]);
             Y_inf = inferredSample(:,[ii jj]);
-            % - Posterior sample - 
+            % - Posterior sample -
             subPlotIdx = reshape( 1:(size(PosteriorData,2)^2),size(PosteriorData,2),size(PosteriorData,2));
             subplot(size(PosteriorData,2),size(PosteriorData,2),subPlotIdx(jj,ii))
             scatter(Y(:,1), Y(:,2), 1, [.5 .5 .5]);
             hold on
-            % - inferred sample - 
+            % - inferred sample -
             scatter(Y_inf(:,1), Y_inf(:,2), 1, 'k');
             xlabel(myBayesian_bothModels.Internal.FullPrior.Marginals(1).Name)
             ylabel(myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name)
