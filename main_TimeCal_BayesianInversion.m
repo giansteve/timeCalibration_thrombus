@@ -407,8 +407,20 @@ for ii = 1:size(PosteriorData,2)
         if ii == jj % HISTOGRAM PLOT
             Y = PosteriorData(:,ii);
             Y_inf = inferredSample(:,ii);
+            Y_prior = priorSample(:,ii);
             subPlotIdx_diag = diag(reshape( 1:(size(PosteriorData,2)^2),size(PosteriorData,2),size(PosteriorData,2)));
             subplot(size(PosteriorData,2),size(PosteriorData,2),subPlotIdx_diag(ii))
+            % - Prior Data -
+            % The width of a histogram element is computed by the Scott's rule
+            w = 3.49*std(Y_prior)*numel(Y_prior)^(-1/3);  % Width of a histogram element
+            nBins = max(ceil(range(Y_prior)/w),1);     % Number of histograms
+            [hY,hX] = hist(Y_prior,nBins);
+            [~,idx_max] = max(hY);
+            normfac = 1/(sum(hY*mean(diff(hX))));
+            hY = hY*normfac;
+            plot(hX,hY,'b-')
+            maxProb_var(subplot_counter) = hX(idx_max);
+            hold on
             % - Posterior Data -
             % The width of a histogram element is computed by the Scott's rule
             w = 3.49*std(Y)*numel(Y)^(-1/3);  % Width of a histogram element
@@ -417,10 +429,8 @@ for ii = 1:size(PosteriorData,2)
             [~,idx_max] = max(hY);
             normfac = 1/(sum(hY*mean(diff(hX))));
             hY = hY*normfac;
-            plot(hX,hY,'k--')
-            hold on
-            maxProb_var(subplot_counter) = hX(idx_max);
-            xline(maxProb_var(subplot_counter),'k:','LineWidth',1);
+            plot(hX,hY,'r-')
+            %             xline(maxProb_var(subplot_counter),'k:','LineWidth',1);
             xlabel(myBayesian_bothModels.Internal.FullPrior.Marginals(ii).Name)
             % - inferred sample -
             % The width of a histogram element is computed by the Scott's rule
@@ -433,8 +443,9 @@ for ii = 1:size(PosteriorData,2)
             plot(hX,hY,'k')
             hold on
             maxProb_var(subplot_counter) = hX(idx_max);
-            xline(maxProb_var(subplot_counter),'k-','LineWidth',1);
+            %             xline(maxProb_var(subplot_counter),'k-','LineWidth',1);
             xlabel(myBayesian_bothModels.Internal.FullPrior.Marginals(ii).Name)
+            legend('prior','computed posterior','inferred posterior')
             subplot_counter = subplot_counter + 1;
         end
     end
@@ -444,11 +455,14 @@ for ii = 1:size(PosteriorData,2)
         if jj < ii % SCATTER PLOT
             Y = PosteriorData(:,[ii jj]);
             Y_inf = inferredSample(:,[ii jj]);
-            % - Posterior sample -
+            Y_prior = priorSample(:,[ii jj]);
+            % - Prior sample -
             subPlotIdx = reshape( 1:(size(PosteriorData,2)^2),size(PosteriorData,2),size(PosteriorData,2));
             subplot(size(PosteriorData,2),size(PosteriorData,2),subPlotIdx(jj,ii))
-            scatter(Y(:,1), Y(:,2), 1, [.5 .5 .5]);
+            scatter(Y_prior(:,1), Y_prior(:,2), 1, 'b');
             hold on
+            % - Posterior sample -
+            scatter(Y(:,1), Y(:,2), 1, 'r');
             % - inferred sample -
             scatter(Y_inf(:,1), Y_inf(:,2), 1, 'k');
             xlabel(myBayesian_bothModels.Internal.FullPrior.Marginals(1).Name)

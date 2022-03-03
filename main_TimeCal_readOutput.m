@@ -64,12 +64,12 @@ var_names = {'${D}_{\mathrm{c}}$','${k}_{\mathrm{c}}$','${k}_{\mathrm{{BP}}}$','
 
 %% Read input file
 myVars = {'INPUT','exp_design'};
-load('timeCal_00input_7000sims_3Feb22.mat',myVars{:})
+load('timeCal_00input_1000sims_25Feb22.mat',myVars{:})
 Ns = size(exp_design,1);
 M = size(exp_design,2);
 
 %% Output
-folderPath = 'TimeCal_Out';
+folderPath = 'TimeCal_Out_validation';
 % Collect output from the solution files
 fprintf('Reading the output files ... \n')
 [OUTPUT,crushed_sim_idx] = timeCal_read_output(Ns,folderPath);
@@ -84,8 +84,14 @@ fprintf('Transforming output ... \n')
 
 % safe
 fprintf('Saving the workspace ... \n')
-cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_7000')
-save('RawOutput_07Feb22_7000sim.mat','-v7.3')
+destinationSave = 'M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_validation1000';
+try
+    cd(destinationSave)
+catch
+    mkdir(destinationSave)
+    cd(destinationSave)
+end
+save('RawOutput_01Mar22_1000sim.mat','-v7.3')
 cd(root_destination)
 % %% Statistics on the output
 % fprintf('Get the statistics ... \n')
