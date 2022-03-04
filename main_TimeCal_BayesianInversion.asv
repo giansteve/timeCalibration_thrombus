@@ -401,7 +401,6 @@ posteriorSample = uq_getSample(PosteriorMarginal,10000,'lhs');
 figure
 PosteriorData = iOpts.Inference.Data;
 inferredSample = posteriorSample;
-priorSample = exp_design_pce_eval(:,[1 6]);
 subplot_counter = 1;
 for ii = 1:size(PosteriorData,2)
     for jj = 1:size(PosteriorData,2)
@@ -477,8 +476,8 @@ end
 
 
 %% save
-cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_7000\AIES\04_pleaseBeTheLastOne')
-save('_AIES_sim7000_1stRoundCalibration_done.mat','-v7.3')
+cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calib')
+save('_AIES_validation1000_2ndRoundCalibration_done.mat','-v7.3')
 cd(root_destination)
 
 

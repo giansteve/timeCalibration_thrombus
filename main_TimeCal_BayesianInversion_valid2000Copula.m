@@ -171,8 +171,8 @@ if strcmpi(inversion_type,'MH')
     % 5. chose the solver
     bayesOpts.solver.Type = 'MCMC';
     bayesOpts.solver.MCMC.Sampler = 'MH'; % metropolis-hasting
-    bayesOpts.solver.MCMC.Steps = 5000; % scalar to impose number of iterations
-    bayesOpts.solver.MCMC.NChains = 250; % number of chains: starting point in the input domain per dimension
+    bayesOpts.solver.MCMC.Steps = 7000; % scalar to impose number of iterations
+    bayesOpts.solver.MCMC.NChains = 300; % number of chains: starting point in the input domain per dimension
     % live visualization, enable only for mistuning check
     bayesOpts.solver.MCMC.Visualize.Parameters = [1;2];
     bayesOpts.solver.MCMC.Visualize.Interval = 250; % every xx steps
@@ -218,11 +218,11 @@ elseif strcmpi(inversion_type,'aies') % AIES algorithm
     bayesOpts.solver.Type = 'MCMC';
     bayesOpts.solver.MCMC.Sampler = 'AIES'; % metropolis-hasting
     bayesOpts.solver.MCMC.Steps = 5000; % default: 300
-    bayesOpts.solver.MCMC.NChains = 100; % default: 100
+    bayesOpts.solver.MCMC.NChains = 200; % default: 100
     bayesOpts.solver.MCMC.a = 2; % scalar for the AIES solver
     % live visualization, enable only for mistuning check
     bayesOpts.solver.MCMC.Visualize.Parameters = [1;2];
-    bayesOpts.solver.MCMC.Visualize.Interval = 50; % every xx steps
+    bayesOpts.solver.MCMC.Visualize.Interval = 500; % every xx steps
     % RUN IT FORREST
     myBayesian_bothModels = uq_createAnalysis(bayesOpts);
     
@@ -257,7 +257,7 @@ elseif strcmpi(inversion_type,'aies') % AIES algorithm
     
     % save
     cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_validation1000\AIES')
-    save('_testAIES_pleaseBeTheLastOne_TimeCal_postBayesian_AliModel00_gaussianDiscrepancy.mat','-v7.3')
+    save('_AIES_validation1000_default_TimeCal_postBayesian_AliModel00_gaussianDiscrepancy.mat','-v7.3')
     cd(root_destination)
 end
 
@@ -276,11 +276,11 @@ PostSample3D = myBayesian_bothModels.Results.PostProc.PostSample;
 PostSample2D = reshape(permute(PostSample3D, [2 1 3]), size(PostSample3D, 2), []).';
 
 % modify limits
-PostSample2D(PostSample2D(:,1)>4e-7,:) = [];
+% PostSample2D(PostSample2D(:,1)>2e-7,:) = [];
 
 colorRange = [.6 .6 .6;
     0.0 0.0 0.0];
-n_limit = 25000;
+n_limit = 100000;
 discrepancyAsVariable = true; % if discrepancy is also inverted in Bayesian
 numOutput = 2; % number of outputs
 
@@ -397,6 +397,7 @@ iOpts.Copula.Type = 'auto';
 % iOpts.Marginals(2).Type = {'Weibull','Gumbel'};
 PosteriorMarginal = uq_createInput(iOpts);
 posteriorSample = uq_getSample(PosteriorMarginal,10000,'lhs');
+priorSample = exp_design_pce_eval(:,[1 6]);
 %
 figure
 PosteriorData = iOpts.Inference.Data;
@@ -407,8 +408,20 @@ for ii = 1:size(PosteriorData,2)
         if ii == jj % HISTOGRAM PLOT
             Y = PosteriorData(:,ii);
             Y_inf = inferredSample(:,ii);
+            Y_prior = priorSample(:,ii);
             subPlotIdx_diag = diag(reshape( 1:(size(PosteriorData,2)^2),size(PosteriorData,2),size(PosteriorData,2)));
             subplot(size(PosteriorData,2),size(PosteriorData,2),subPlotIdx_diag(ii))
+            % - Prior Data -
+            % The width of a histogram element is computed by the Scott's rule
+            w = 3.49*std(Y_prior)*numel(Y_prior)^(-1/3);  % Width of a histogram element
+            nBins = max(ceil(range(Y_prior)/w),1);     % Number of histograms
+            [hY,hX] = hist(Y_prior,nBins);
+            [~,idx_max] = max(hY);
+            normfac = 1/(sum(hY*mean(diff(hX))));
+            hY = hY*normfac;
+            plot(hX,hY,'b-')
+            maxProb_var(subplot_counter) = hX(idx_max);
+            hold on
             % - Posterior Data -
             % The width of a histogram element is computed by the Scott's rule
             w = 3.49*std(Y)*numel(Y)^(-1/3);  % Width of a histogram element
@@ -417,10 +430,8 @@ for ii = 1:size(PosteriorData,2)
             [~,idx_max] = max(hY);
             normfac = 1/(sum(hY*mean(diff(hX))));
             hY = hY*normfac;
-            plot(hX,hY,'k--')
-            hold on
-            maxProb_var(subplot_counter) = hX(idx_max);
-            xline(maxProb_var(subplot_counter),'k:','LineWidth',1);
+            plot(hX,hY,'r-')
+            %             xline(maxProb_var(subplot_counter),'k:','LineWidth',1);
             xlabel(myBayesian_bothModels.Internal.FullPrior.Marginals(ii).Name)
             % - inferred sample -
             % The width of a histogram element is computed by the Scott's rule
@@ -433,8 +444,9 @@ for ii = 1:size(PosteriorData,2)
             plot(hX,hY,'k')
             hold on
             maxProb_var(subplot_counter) = hX(idx_max);
-            xline(maxProb_var(subplot_counter),'k-','LineWidth',1);
+            %             xline(maxProb_var(subplot_counter),'k-','LineWidth',1);
             xlabel(myBayesian_bothModels.Internal.FullPrior.Marginals(ii).Name)
+            legend('prior','computed posterior','inferred posterior')
             subplot_counter = subplot_counter + 1;
         end
     end
@@ -444,11 +456,14 @@ for ii = 1:size(PosteriorData,2)
         if jj < ii % SCATTER PLOT
             Y = PosteriorData(:,[ii jj]);
             Y_inf = inferredSample(:,[ii jj]);
-            % - Posterior sample -
+            Y_prior = priorSample(:,[ii jj]);
+            % - Prior sample -
             subPlotIdx = reshape( 1:(size(PosteriorData,2)^2),size(PosteriorData,2),size(PosteriorData,2));
             subplot(size(PosteriorData,2),size(PosteriorData,2),subPlotIdx(jj,ii))
-            scatter(Y(:,1), Y(:,2), 1, [.5 .5 .5]);
+            scatter(Y_prior(:,1), Y_prior(:,2), 1, 'b');
             hold on
+            % - Posterior sample -
+            scatter(Y(:,1), Y(:,2), 1, 'r');
             % - inferred sample -
             scatter(Y_inf(:,1), Y_inf(:,2), 1, 'k');
             xlabel(myBayesian_bothModels.Internal.FullPrior.Marginals(1).Name)
@@ -461,8 +476,10 @@ for ii = 1:size(PosteriorData,2)
 end
 
 
-
-
+%% save
+cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_validation1000\AIES')
+save('_AIES_validation1000_2ndRoundCalibration_done.mat','-v7.3')
+cd(root_destination)
 
 
 
