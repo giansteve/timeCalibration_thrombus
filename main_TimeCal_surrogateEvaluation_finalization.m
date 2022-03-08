@@ -31,7 +31,7 @@ LS_1stRound(:,2) = std(outToPCE.L_S(MRI_time_index,:),[],2);
 clear outToPCE
 
 %% Load 2nd round
-load('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_validation1000\AIES\_AIES_validation1000_2ndRoundCalibration_done.mat')
+load('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_valid2000Copula\AIES\_validation2000Copula_done.mat')
 HS_2ndRound(:,1) = mean(outToPCE.H_S(MRI_time_index,:),2);
 HS_2ndRound(:,2) = std(outToPCE.H_S(MRI_time_index,:),[],2);
 LS_2ndRound(:,1) = mean(outToPCE.L_S(MRI_time_index,:),2);
@@ -41,7 +41,7 @@ LS_2ndRound(:,2) = std(outToPCE.L_S(MRI_time_index,:),[],2);
 folderPath = 'TimeCal_MRIdata';
 cd(root_destination)
 try
-    dest_plot = sprintf('Plot_AliModel_validation1000_finalization\\%s',folderPath);
+    dest_plot = sprintf('Plot_AliModel_valid2000Copula_finalization\\%s',folderPath);
     cd(dest_plot)
 catch
     mkdir(dest_plot)
@@ -60,17 +60,6 @@ plot(human_thr.time+xAxisShift,HS_2ndRound(:,1),'kd','MarkerSize',4,'MarkerFaceC
 errorbar(human_thr.time-xAxisShift,human_thr.H_S(:,1),human_thr.H_S(:,2),human_thr.H_S(:,2),'LineStyle','none','Marker','none','Color','r')
 errorbar(human_thr.time,HS_1stRound(:,1),HS_1stRound(:,2),HS_1stRound(:,2),'LineStyle','none','Marker','none','Color','k')
 errorbar(human_thr.time+xAxisShift,HS_2ndRound(:,1),HS_2ndRound(:,2),HS_2ndRound(:,2),'LineStyle','none','Marker','none','Color','k')
-% posterior surrogate evaluation
-% generate surrogate evaluations
-% exp_design_pcePosterior = uq_getSample(PosteriorMarginal,10000);
-% exp_design_pcePosterior = [exp_design_pcePosterior repmat(exp_design(:,[2 3 4 5 7]),10,1)];
-% exp_design_pcePosterior = exp_design_pcePosterior(:,[1 3 4 5 6 2 7]);
-% Y_pce_HS_posterior = uq_evalModel(PCE_HS,exp_design_pcePosterior);
-% Y_pce_LS_posterior = uq_evalModel(PCE_LS,exp_design_pcePosterior);
-% HS_3rdRound(:,1) = mean(Y_pce_HS_posterior);
-% HS_3rdRound(:,2) = std(Y_pce_HS_posterior);
-% plot(human_thr.time+2*xAxisShift,HS_3rdRound(:,1),'rd','MarkerSize',3,'MarkerFaceColor','r')
-% errorbar(human_thr.time+xAxisShift,HS_3rdRound(:,1),HS_3rdRound(:,2),HS_3rdRound(:,2),'LineStyle','none','Marker','none','Color','k')
 % set plot properties
 ylabel('$H/S$ [-]')
 % legend('MRI','$1_{st}$ model','$2_{nd}$ model','Location','se')

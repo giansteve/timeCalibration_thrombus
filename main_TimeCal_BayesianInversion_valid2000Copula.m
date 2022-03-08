@@ -21,17 +21,17 @@ addpath(root_destination)
 % uqlab
 
 %% Load post PCE file
-load('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_validation1000\TimeCal_postSurrogate_AliModel_validation1000.mat')
-M = size(INPUT.nonConst,2);
+load('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_valid2000Copula\TimeCal_postSurrogate_AliModel_valid2000Copula.mat')
+M = size(PosteriorMarginal.nonConst,2);
 %% Surrogate accuracy display
 % generate surrogate evaluations
-exp_design_pce_eval = uq_getSample(INPUT,12000);
+exp_design_pce_eval = uq_getSample(PosteriorMarginal,12000);
 Y_pce_HS = uq_evalModel(PCE_HS,exp_design_pce_eval);
 Y_pce_LS = uq_evalModel(PCE_LS,exp_design_pce_eval);
 % plot
 cd(root_destination)
 try
-    dest_plot = sprintf('Plot_AliModel_validation1000\\Surrogate');
+    dest_plot = sprintf('Plot_AliModel_valid2000Copula\\Surrogate');
     cd(dest_plot)
 catch
     mkdir(dest_plot)
@@ -70,25 +70,25 @@ cd(root_destination)
 [SA_LS.main,SA_LS.total] = SA_time(PCE_LS.PCE,M);
 cd(root_destination)
 try
-    dest_SAplot = sprintf('Plot_AliModel_validation1000\\SA');
+    dest_SAplot = sprintf('Plot_AliModel_valid2000Copula\\SA');
     cd(dest_SAplot)
 catch
     mkdir(dest_SAplot)
     cd(dest_SAplot)
 end
 SA_plot_time(SA_HS,linspace(0,1,size(SA_HS.main,1)),'SA_HS','$t^*$')
-subplot(211); legend(var_names{INPUT.nonConst},'Interpreter','latex','Location','bestoutside')
+subplot(211); legend(var_names{PosteriorMarginal.nonConst},'Interpreter','latex','Location','bestoutside')
 GM_printBMP(400,400,'SA_HS')
 GM_printEPS(400,400,'SA_HS')
 
 SA_plot_time(SA_LS,linspace(0,1,size(SA_LS.main,1)),'SA_LS','$t^*$')
-subplot(211); legend(var_names{INPUT.nonConst},'Interpreter','latex','Location','bestoutside')
+subplot(211); legend(var_names{PosteriorMarginal.nonConst},'Interpreter','latex','Location','bestoutside')
 GM_printBMP(400,400,'SA_LS')
 GM_printEPS(400,400,'SA_LS')
 cd(root_destination)
 
 %% prepare for Bayesian Inverse problem
-inversion_type = 'AIES';
+inversion_type = 'MH';
 rng(100)
 clear('bayesOpts','myPriorDist','ForwardModels','myData','discrepancyOpts','myBayesian_bothModels')
 clc
@@ -117,9 +117,9 @@ clc
 % bayesOpts_HS.ForwardModel = PCE_HS;
 % bayesOpts_LS.ForwardModel = PCE_LS;
 ForwardModels(1).Model = PCE_HS;
-ForwardModels(1).PMap = [1 2 3 4 5 6 7];
+ForwardModels(1).PMap = [1 2];
 ForwardModels(2).Model = PCE_LS;
-ForwardModels(2).PMap = [1 2 3 4 5 6 7];
+ForwardModels(2).PMap = [1 2];
 bayesOpts.ForwardModel = ForwardModels;
 
 % 3. provide measurements
@@ -143,7 +143,7 @@ myData(2).MOMap = [2 2 2 2 2 2 2;...    % Model ID
 % bayesOpts_LS.Data = myData_LS;
 bayesOpts.Type = 'Inversion';
 bayesOpts.Data = myData;
-bayesOpts.Prior = INPUT;
+bayesOpts.Prior = PosteriorMarginal;
 
 % 4.1 give the discrepancy
 % :::::::::::::::: ORIGINAL :::::::::::::::::::::::
@@ -171,11 +171,11 @@ if strcmpi(inversion_type,'MH')
     % 5. chose the solver
     bayesOpts.solver.Type = 'MCMC';
     bayesOpts.solver.MCMC.Sampler = 'MH'; % metropolis-hasting
-    bayesOpts.solver.MCMC.Steps = 7000; % scalar to impose number of iterations
-    bayesOpts.solver.MCMC.NChains = 300; % number of chains: starting point in the input domain per dimension
+    bayesOpts.solver.MCMC.Steps = 500000; % scalar to impose number of iterations
+    bayesOpts.solver.MCMC.NChains = 350; % number of chains: starting point in the input domain per dimension
     % live visualization, enable only for mistuning check
     bayesOpts.solver.MCMC.Visualize.Parameters = [1;2];
-    bayesOpts.solver.MCMC.Visualize.Interval = 250; % every xx steps
+    bayesOpts.solver.MCMC.Visualize.Interval = 1500; % every xx steps
     % RUN IT FORREST
     myBayesian_bothModels = uq_createAnalysis(bayesOpts);
     
@@ -209,8 +209,8 @@ if strcmpi(inversion_type,'MH')
         )
     
     % save
-    cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_validation1000\MH')
-    save('_testMH_5k_TimeCal_postBayesian_AliModel00_gaussianDiscrepancy.mat','-v7.3')
+    cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_valid2000Copula\MH')
+    save('_MH_5k_TimeCal_postBayesian_AliMode2000Copula_gaussianDiscrepancy.mat','-v7.3')
     cd(root_destination)
     
 elseif strcmpi(inversion_type,'aies') % AIES algorithm
@@ -256,8 +256,8 @@ elseif strcmpi(inversion_type,'aies') % AIES algorithm
         )
     
     % save
-    cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_validation1000\AIES')
-    save('_AIES_validation1000_default_TimeCal_postBayesian_AliModel00_gaussianDiscrepancy.mat','-v7.3')
+    cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_valid2000Copula\AIES')
+    save('_AIES_valid2000Copula_default_TimeCal_postBayesian_AliModel00_gaussianDiscrepancy.mat','-v7.3')
     cd(root_destination)
 end
 
@@ -477,8 +477,8 @@ end
 
 
 %% save
-cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_validation1000\AIES')
-save('_AIES_validation1000_2ndRoundCalibration_done.mat','-v7.3')
+cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_valid2000Copula\AIES')
+save('_validation2000Copula_done.mat','-v7.3')
 cd(root_destination)
 
 
