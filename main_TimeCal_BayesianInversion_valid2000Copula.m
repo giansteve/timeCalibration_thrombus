@@ -41,22 +41,22 @@ figure('Visible','off')
 subplot(221)
 GM_pdf_matrix(phic_HS_threshold(MRI_time_index,:))
 xlim([0 1])
-% ylim([0 .2])
+ylim([0 1])
 ylabel('$p$ $(\%)$ - model')
 subplot(222)
 GM_pdf_matrix(phic_LS_threshold(MRI_time_index,:))
-xlim([0 inf])
-% ylim([0 .2])
+xlim([0 1])
+xlim([0 15])
 subplot(223)
 GM_pdf_matrix(Y_pce_HS')
 xlim([0 1])
-% ylim([0 .2])
+ylim([0 1])
 ylabel('$p$ $(\%)$ - surrogate')
 xlabel('$H/S$ $(-)$')
 subplot(224)
 GM_pdf_matrix(Y_pce_LS')
-xlim([0 inf])
-% ylim([0 1])
+ylim([0 1])
+xlim([0 15])
 xlabel('$L/S$ $(-)$')
 GM_printBMP(400,400,'ModOut_SurrOut_prob')
 GM_printEPS(400,400,'ModOut_SurrOut_prob')
@@ -88,7 +88,7 @@ GM_printEPS(400,400,'SA_LS')
 cd(root_destination)
 
 %% prepare for Bayesian Inverse problem
-inversion_type = 'MH';
+inversion_type = 'aies';
 rng(100)
 clear('bayesOpts','myPriorDist','ForwardModels','myData','discrepancyOpts','myBayesian_bothModels')
 clc
@@ -172,17 +172,17 @@ if strcmpi(inversion_type,'MH')
     bayesOpts.solver.Type = 'MCMC';
     bayesOpts.solver.MCMC.Sampler = 'MH'; % metropolis-hasting
     bayesOpts.solver.MCMC.Steps = 500000; % scalar to impose number of iterations
-    bayesOpts.solver.MCMC.NChains = 350; % number of chains: starting point in the input domain per dimension
+    bayesOpts.solver.MCMC.NChains = 300; % number of chains: starting point in the input domain per dimension
     % live visualization, enable only for mistuning check
     bayesOpts.solver.MCMC.Visualize.Parameters = [1;2];
-    bayesOpts.solver.MCMC.Visualize.Interval = 1500; % every xx steps
+    bayesOpts.solver.MCMC.Visualize.Interval = 5000; % every xx steps
     % RUN IT FORREST
     myBayesian_bothModels = uq_createAnalysis(bayesOpts);
     
     % results are stored into myBayesian.Results
     % generate good posterior sample with
     uq_postProcessInversion(myBayesian_bothModels,...
-        'burnIn', 0.60,... % specify the fraction of samples discarded as burn-in
+        'burnIn', 0.75,... % specify the fraction of samples discarded as burn-in
         'pointEstimate',{'Mean','MAP'},... % compute 'Mean': empirical mean from sample; 'MAP': maximum posterior probability from sample
         'gelmanRubin',true... % multivariate potential scale reduction factor is computed [convergence at 1]
         )

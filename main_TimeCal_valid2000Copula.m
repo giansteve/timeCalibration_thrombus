@@ -104,7 +104,7 @@ phic_HS_threshold = outToPCE.H_S;
 phic_LS_threshold = outToPCE.L_S;
 
 % delete crushed sim from the input
-exp_design(crushed_sim_idx,:) = [];
+% exp_design(crushed_sim_idx,:) = [];
 Ns = size(exp_design,1);
 M = size(exp_design,2);
 
