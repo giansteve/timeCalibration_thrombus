@@ -25,8 +25,8 @@ function [sigmaOutHS,sigmaOutLS] = timeCal_discrModel(humanData)
 % SigmaOptsHS.Marginals(6).Parameters = [humanData.H_S(7,1) humanData.H_S(7,2)];
 
 SigmaOptsHS.Marginals(1).Name = '$\epsilon_{HS}$';
-SigmaOptsHS.Marginals(1).Type = 'Uniform';
-SigmaOptsHS.Marginals(1).Parameters = [0 0.25];
+SigmaOptsHS.Marginals(1).Type = 'gamma'; % jeffrey prior
+SigmaOptsHS.Marginals(1).Parameters = [0.0001 0.0001];
 
 sigmaOutHS = uq_createInput(SigmaOptsHS);
 

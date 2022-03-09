@@ -8,8 +8,12 @@ function [] = GM_pdf_matrix(mat)
 colors = zeros(size(mat,1),3);
 for i = 1:size(mat,1)
     colors(i,:) = [1-i/size(mat,1) 1-i/size(mat,1) 1-i/size(mat,1)];
+%     colors(i,:) = [1-i/size(mat,1) 0.5 0.5];
 end
 colors(colors==0)=.05;
+colormap gray
+c = colorbar;
+% set( c, 'YDir', 'reverse' );
 
 %% define max and min of variable
 N_edges = 100;

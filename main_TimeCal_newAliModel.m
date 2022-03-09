@@ -82,7 +82,7 @@ human_thr.growthRate.exposedArea = diff(fittedData.SA)/(deltaT);    % m^2/min
 folderPath = 'TimeCal_MRIdata';
 cd(root_destination)
 try
-    dest_plot = sprintf('Plot_AliModel_Calibration\\%s',folderPath);
+    dest_plot = sprintf('Plot_AliModel_Calibration_fittedData\\%s',folderPath);
     cd(dest_plot)
 catch
     mkdir(dest_plot)
@@ -98,7 +98,6 @@ load('timeCal_00input_7000sims_3Feb22.mat',myVars{:})
 
 %% Load output: H/S and L/S
 
-% load('RawOutput_25Jan22_5000sim.mat')
 load('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_7000\RawOutput_07Feb22_7000sim.mat')
 phic_HS_threshold = outToPCE.H_S;
 phic_LS_threshold = outToPCE.L_S;
@@ -121,7 +120,7 @@ var_names = {'${D}_{\mathrm{c}}$',...
 fprintf('Get statistics INPUT ... \n')
 cd(root_destination)
 try
-    dest_plot = sprintf('Plot_AliModel_Calibration\\StatsInput');
+    dest_plot = sprintf('Plot_AliModel_Calibration_fittedData\\StatsInput');
     cd(dest_plot)
 catch
     mkdir(dest_plot)
@@ -138,7 +137,7 @@ cd(root_destination)
 fprintf('Get statistics OUTPUT ... \n')
 cd(root_destination)
 try
-    dest_plot = sprintf('Plot_AliModel_Calibration\\StatsOutput');
+    dest_plot = sprintf('Plot_AliModel_Calibration_fittedData\\StatsOutput');
     cd(dest_plot)
 catch
     mkdir(dest_plot)
@@ -149,14 +148,15 @@ cd(root_destination)
 
 %% Create metamodel of the thrombus model
 % moving PCE computation to UQ[py]lab
-MRI_time_index = round(linspace(1,61,7));
+MRI_time_index = round(linspace(1,61,61));
 metamodel.Type = 'Metamodel';
 metamodel.MetaType = 'PCE';
 metamodel.Display = 'verbose';
 metamodel.Method = 'lars';
-metamodel.Degree = 6:11;
-metamodel.TruncOptions.qNorm = [0.9 0.95 0.975];
+metamodel.Degree = 2:11;
+metamodel.TruncOptions.qNorm = [0.8 0.85 0.9 0.95 0.975];
 metamodel.DegreeEarlyStop = false;
+metamodel.qNormEarlyStop = false;
 metamodel.Input = INPUT;
 metamodel.ExpDesign.NSamples = Ns;
 metamodel.ExpDesign.X = exp_design;
@@ -169,7 +169,14 @@ PCE_LS = uq_createModel(metamodel);
 
 % save PS: remember to create function to save in specific folder with the
 % date :)
-save('TimeCal_postSurrogate_AliModel7000') % moved saved file to storing folder (NoGitHub)
+save('TimeCal_postSurrogate_AliModel7000_fittedData') % moved saved file to storing folder (NoGitHub)
+
+
+
+
+
+
+
 
 
 
