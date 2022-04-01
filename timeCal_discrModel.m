@@ -30,6 +30,13 @@ SigmaOptsHS.Marginals(1).Parameters = [0 0.25];
 
 sigmaOutHS = uq_createInput(SigmaOptsHS);
 
+
+% SigmaOptsHS.Marginals(1).Name = '$\epsilon_{HS}$';
+% SigmaOptsHS.Marginals(1).Type = 'gamma'; % jeffrey prior
+% SigmaOptsHS.Marginals(1).Parameters = [0.0001 0.0001];
+% 
+% sigmaOutHS = uq_createInput(SigmaOptsHS);
+
 % SigmaOptsLS.Marginals(1).Name = 'LS_0';
 % SigmaOptsLS.Marginals(1).Type = 'uniform';
 % SigmaOptsLS.Marginals(1).Parameters = [humanData.L_S(1,1) 0.1];
@@ -54,10 +61,14 @@ sigmaOutHS = uq_createInput(SigmaOptsHS);
 
 SigmaOptsLS.Marginals(1).Name = '$\epsilon_{LS}$';
 SigmaOptsLS.Marginals(1).Type = 'Uniform';
-SigmaOptsLS.Marginals(1).Parameters = [0 2];
+SigmaOptsLS.Marginals(1).Parameters = [0 3];
 sigmaOutLS = uq_createInput(SigmaOptsLS);
 
-
+% SigmaOptsLS.Marginals(1).Name = '$\epsilon_{LS}$';
+% SigmaOptsLS.Marginals(1).Type = 'gamma'; % jeffrey prior
+% SigmaOptsLS.Marginals(1).Parameters = [0.0001 0.0001];
+% 
+% sigmaOutLS = uq_createInput(SigmaOptsLS);
 
 
 

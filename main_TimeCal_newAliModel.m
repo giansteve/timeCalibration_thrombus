@@ -14,9 +14,9 @@ set(0,'DefaultTextInterpreter','latex')
 set(0,'defaultAxesFontSize',11)
 
 % ROOT Destination
-cd M:\IFM\User\melito\Server\Projects\TimeCalibration
-root_destination = pwd;
-addpath(root_destination)
+cd C:\Users\gm20m18\Desktop\TimeCalibrationProject\TimeCalibration\timeCalibration_thrombus
+root_destinationC = pwd;
+addpath(root_destinationC)
 
 % initialize UQlab
 % uqlab
@@ -80,7 +80,7 @@ human_thr.growthRate.exposedArea = diff(fittedData.SA)/(deltaT);    % m^2/min
 
 %% plot fitting MRI
 folderPath = 'TimeCal_MRIdata';
-cd(root_destination)
+cd(root_destinationC)
 try
     dest_plot = sprintf('Plot_AliModel_Calibration\\%s',folderPath);
     cd(dest_plot)
@@ -89,7 +89,7 @@ catch
     cd(dest_plot)
 end
 timeCal_plotFittingMRI(fittedData,human_thr,'MRI_fitting')
-cd(root_destination)
+cd(root_destinationC)
 
 
 %% Read input file
@@ -119,7 +119,7 @@ var_names = {'${D}_{\mathrm{c}}$',...
 
 %% Statistics on the input
 fprintf('Get statistics INPUT ... \n')
-cd(root_destination)
+cd(root_destinationC)
 try
     dest_plot = sprintf('Plot_AliModel_Calibration\\StatsInput');
     cd(dest_plot)
@@ -132,11 +132,11 @@ plotmatrix(exp_design)
 GM_printBMP(600,600,'InputStats')
 GM_printEPS(600,600,'InputStats')
 close all
-cd(root_destination)
+cd(root_destinationC)
 
 %% Statistics on the output
 fprintf('Get statistics OUTPUT ... \n')
-cd(root_destination)
+cd(root_destinationC)
 try
     dest_plot = sprintf('Plot_AliModel_Calibration\\StatsOutput');
     cd(dest_plot)
@@ -145,7 +145,7 @@ catch
     cd(dest_plot)
 end
 timeCal_statisticsOutput(phic_HS_threshold,phic_LS_threshold,fittedData);
-cd(root_destination)
+cd(root_destinationC)
 
 %% Create metamodel of the thrombus model
 % moving PCE computation to UQ[py]lab
@@ -153,26 +153,25 @@ MRI_time_index = round(linspace(1,61,7));
 metamodel.Type = 'Metamodel';
 metamodel.MetaType = 'PCE';
 metamodel.Display = 'verbose';
-metamodel.Method = 'lars';
-metamodel.Degree = 6:11;
+metamodel.Method = 'ols';
+metamodel.Degree = 6:13;
 metamodel.TruncOptions.qNorm = [0.9 0.95 0.975];
 metamodel.DegreeEarlyStop = false;
 metamodel.Input = INPUT;
 metamodel.ExpDesign.NSamples = Ns;
 metamodel.ExpDesign.X = exp_design;
 % PCE H/S
-metamodel.ExpDesign.Y = phic_HS_threshold(MRI_time_index,:)';
+metamodel.ExpDesign.Y = phic_HS_threshold(MRI_time_index(end),:)';
 PCE_HS = uq_createModel(metamodel);
 % PCE L/S
-metamodel.ExpDesign.Y = phic_LS_threshold(MRI_time_index,:)';
+metamodel.ExpDesign.Y = phic_LS_threshold(MRI_time_index(end),:)';
 PCE_LS = uq_createModel(metamodel);
 
 % save PS: remember to create function to save in specific folder with the
 % date :)
-save('TimeCal_postSurrogate_AliModel7000') % moved saved file to storing folder (NoGitHub)
-
-
-
+% cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_7000')
+% % save('TimeCal_postSurrogate_AliModel7000') % moved saved file to storing folder (NoGitHub)
+% cd(root_destinationC)
 
 
 

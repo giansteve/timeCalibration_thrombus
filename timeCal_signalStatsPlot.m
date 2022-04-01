@@ -11,15 +11,15 @@ hold on
 % plot(time,signal_data,'Color',[.7 .7 .7])
 
 % plot specific moments
-plot(time,mean(signal_data,2),'k--','LineWidth',1)              % mean
-plot(time,smooth(median(signal_data,2)),'k-','LineWidth',1)     % median
-% plot(time,mean(signal_data,2) + 1.*std(signal_data,[],2),'k:','LineWidth',2)    % confidence interval
-% plot(time,mean(signal_data,2) - 1.*std(signal_data,[],2),'k:','LineWidth',2)    % confidence interval
+plot(time,mean(signal_data,2),'k--','LineWidth',1.5)              % mean
+plot(time,smooth(median(signal_data,2)),'k-','LineWidth',1.5)     % median
+plot(time,mean(signal_data,2) + 1.*std(signal_data,[],2),'k:','LineWidth',1)    % confidence interval
+plot(time,mean(signal_data,2) - 1.*std(signal_data,[],2),'k:','LineWidth',1)    % confidence interval
 ylim([0 inf])
 
 % plot only min and max simulations
-plot(time',min(signal_data,[],2),'Color',[.7 .7 .7])
-plot(time',max(signal_data,[],2),'Color',[.7 .7 .7])
+% plot(time',min(signal_data,[],2),'Color',[.7 .7 .7])
+% plot(time',max(signal_data,[],2),'Color',[.7 .7 .7])
 
 
 end

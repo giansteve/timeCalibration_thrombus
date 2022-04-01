@@ -13,9 +13,9 @@ set(0,'DefaultTextInterpreter','latex')
 set(0,'defaultAxesFontSize',11)
 
 % ROOT Destination
-cd M:\IFM\User\melito\Server\Projects\TimeCalibration
-root_destination = pwd;
-addpath(root_destination)
+cd C:\Users\gm20m18\Desktop\TimeCalibrationProject\TimeCalibration\timeCalibration_thrombus
+root_destinationC = pwd;
+addpath(root_destinationC)
 
 % initialize UQlab
 % uqlab
@@ -25,11 +25,12 @@ load('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFil
 
 %% Surrogate accuracy display
 % generate surrogate evaluations
-exp_design_pce_eval = uq_getSample(INPUT,12000);
+% exp_design_pce_eval = uq_getSample(INPUT,7000,'sobol');
+exp_design_pce_eval = exp_design;
 Y_pce_HS = uq_evalModel(PCE_HS,exp_design_pce_eval);
 Y_pce_LS = uq_evalModel(PCE_LS,exp_design_pce_eval);
 % plot
-cd(root_destination)
+cd(root_destinationC)
 try
     dest_plot = sprintf('Plot_AliModel_Calibration\\Surrogate');
     cd(dest_plot)
@@ -37,38 +38,48 @@ catch
     mkdir(dest_plot)
     cd(dest_plot)
 end
-figure('Visible','off')
+% figure('Visible','off')
+figure
 subplot(221)
 GM_pdf_matrix(phic_HS_threshold(MRI_time_index,:))
-xlim([0 1])
+xlim([0 1.5])
 % ylim([0 .2])
-ylabel('$p$ $(\%)$ - model')
+ylabel('$p(Y)$ - model')
 subplot(222)
 GM_pdf_matrix(phic_LS_threshold(MRI_time_index,:))
-xlim([0 inf])
-% ylim([0 .2])
+xlim([0 35])
+ylim([0 .2])
 subplot(223)
 GM_pdf_matrix(Y_pce_HS')
-xlim([0 1])
+xlim([0 1.5])
 % ylim([0 .2])
-ylabel('$p$ $(\%)$ - surrogate')
+ylabel('$p(Y)$ - surrogate')
 xlabel('$H/S$ $(-)$')
 subplot(224)
 GM_pdf_matrix(Y_pce_LS')
-xlim([0 inf])
+xlim([0 35])
 % ylim([0 1])
 xlabel('$L/S$ $(-)$')
-GM_printBMP(400,400,'ModOut_SurrOut_prob')
-GM_printEPS(400,400,'ModOut_SurrOut_prob')
-close
-cd(root_destination)
+% GM_printBMP(400,400,'ModOut_SurrOut_prob')
+% GM_printEPS(400,400,'ModOut_SurrOut_prob')
+% close
+figure
+subplot(121)
+plot(phic_HS_threshold(MRI_time_index(end),:),Y_pce_HS(:,end),'k.','MarkerSize',1)
+hold on
+plot(linspace(0,1,100),linspace(0,1,100),'r-')
+subplot(122)
+plot(phic_LS_threshold(MRI_time_index(end),:),Y_pce_LS(:,end),'k.','MarkerSize',1)
+hold on
+plot(linspace(0,30,100),linspace(0,30,100),'r-')
+cd(root_destinationC)
 
 %% Perform sensitivity analysis
 % the probability distributions of the data will not be transformed. First
 % test is given in this case. In case of error, review this part.
 [SA_HS.main,SA_HS.total] = SA_time(PCE_HS.PCE,M);
 [SA_LS.main,SA_LS.total] = SA_time(PCE_LS.PCE,M);
-cd(root_destination)
+cd(root_destinationC)
 try
     dest_SAplot = sprintf('Plot_AliModel_Calibration\\SA');
     cd(dest_SAplot)
@@ -85,10 +96,10 @@ SA_plot_time(SA_LS,linspace(0,1,size(SA_LS.main,1)),'SA_LS','$t^*$')
 subplot(211); legend(var_names,'Interpreter','latex','Location','bestoutside')
 GM_printBMP(400,400,'SA_LS')
 GM_printEPS(400,400,'SA_LS')
-cd(root_destination)
+cd(root_destinationC)
 
 %% prepare for Bayesian Inverse problem
-inversion_type = 'MH';
+inversion_type = 'aies';
 rng(100)
 clear('bayesOpts','myPriorDist','ForwardModels','myData','discrepancyOpts','myBayesian_bothModels')
 clc
@@ -209,20 +220,21 @@ if strcmpi(inversion_type,'MH')
         )
     
     % save
-    cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_7000\MH')
-    save('_testMH_5k_TimeCal_postBayesian_AliModel00_gaussianDiscrepancy.mat','-v7.3')
-    cd(root_destination)
+    cd('C:\Users\gm20m18\Desktop\TimeCalibrationProject\TimeCalibration\storageFiles_noGitHub\FirstRoundCalibration\MH')
+    saveName = sprintf('_MH_Steps%dNChain%d_TimeCal_AliModel00_jeffreysDiscrepancy.mat',bayesOpts.solver.MCMC.Steps,bayesOpts.solver.MCMC.NChains);
+    save(saveName,'-v7.3')
+    cd(root_destinationC)
     
 elseif strcmpi(inversion_type,'aies') % AIES algorithm
     % 5. chose the solver
     bayesOpts.solver.Type = 'MCMC';
     bayesOpts.solver.MCMC.Sampler = 'AIES'; % metropolis-hasting
-    bayesOpts.solver.MCMC.Steps = 10000; % default: 300
-    bayesOpts.solver.MCMC.NChains = 100; % default: 100
+    bayesOpts.solver.MCMC.Steps = 9000; % default: 300
+    bayesOpts.solver.MCMC.NChains = 200; % default: 100
     bayesOpts.solver.MCMC.a = 2; % scalar for the AIES solver
     % live visualization, enable only for mistuning check
     bayesOpts.solver.MCMC.Visualize.Parameters = [1;2];
-    bayesOpts.solver.MCMC.Visualize.Interval = 50; % every xx steps
+    bayesOpts.solver.MCMC.Visualize.Interval = 250; % every xx steps
     % RUN IT FORREST
     myBayesian_bothModels = uq_createAnalysis(bayesOpts);
     
@@ -256,9 +268,10 @@ elseif strcmpi(inversion_type,'aies') % AIES algorithm
         )
     
     % save
-    cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_7000\AIES')
-    save('_testAIES_pleaseBeTheLastOne_TimeCal_postBayesian_AliModel00_gaussianDiscrepancy.mat','-v7.3')
-    cd(root_destination)
+    cd('C:\Users\gm20m18\Desktop\TimeCalibrationProject\TimeCalibration\storageFiles_noGitHub\FirstRoundCalibration\AIES')
+    saveName = sprintf('_AIES_Steps%dNChain%d_TimeCal_AliModel00_gaussianDiscrepancy.mat',bayesOpts.solver.MCMC.Steps,bayesOpts.solver.MCMC.NChains);
+    save(saveName,'-v7.3')
+    cd(root_destinationC)
 end
 
 
@@ -276,14 +289,14 @@ PostSample3D = myBayesian_bothModels.Results.PostProc.PostSample;
 PostSample2D = reshape(permute(PostSample3D, [2 1 3]), size(PostSample3D, 2), []).';
 
 % modify limits
-PostSample2D(PostSample2D(:,1)>4e-7,:) = [];
+% PostSample2D(PostSample2D(:,1)>4e-7,:) = [];
 
 colorRange = [.6 .6 .6;
     0.0 0.0 0.0];
 n_limit = 25000;
 discrepancyAsVariable = true; % if discrepancy is also inverted in Bayesian
 numOutput = 2; % number of outputs
-
+nonConstVec = [1,6];
 figure
 if ~discrepancyAsVariable
     Y_allDim = PostSample2D(randi(size(PostSample2D,1),1,n_limit),1:end-numOutput);
@@ -334,7 +347,7 @@ if ~discrepancyAsVariable
         end
     end
 else % show discrepancy inversion posterior
-    Y_allDim = PostSample2D(randi(size(PostSample2D,1),1,n_limit),:);
+    Y_allDim = PostSample2D(randi(size(PostSample2D,1),1,n_limit),1:end-numOutput);
     subplot_counter = 1;
     for ii = 1:size(Y_allDim,2)
         for jj = 1:size(Y_allDim,2)
@@ -352,8 +365,10 @@ else % show discrepancy inversion posterior
                 colorVec = colorFrac'*colorRange(2,:) + (1-colorFrac')*colorRange(1,:);
                 normfac = 1/(sum(hY*mean(diff(hX))));
                 hY = hY*normfac;
-                bar(hX,hY,'BarWidth',1,'CData',colorVec,'FaceColor','flat','EdgeAlpha',0)
+%                 hh = histogram(Y_allDim(:,ii),'Normalization','probability');
+                bar(hX,hY./(size(Y_allDim,1).*hX),'BarWidth',1,'CData',colorVec,'FaceColor','flat','EdgeAlpha',0)
                 hold on
+%                 hhuni = histogram(exp_design(:,nonConstVec(ii)),'Normalization','probability');
                 maxProb_var(subplot_counter) = hX(idx_max);
                 xline(maxProb_var(subplot_counter),'r','LineWidth',1);
                 %                 xline(myBayesian_bothModels.Results.PostProc.PointEstimate.X{1,2}(1),'r');
@@ -390,16 +405,29 @@ else % show discrepancy inversion posterior
     end
 end
 
+%% fit posterior
+[fitData.ff_postDcGam,fitData.gof_postDcGam] = fit(Y_allDim(:,1),Y_allDim(:,2),'exp2');
+% random select element of Y_allDim
+% determine how many elements is ten percent
+numelements = 5000;
+% get the randomly-selected indices
+indices = randperm(length(Y_allDim));
+indices = indices(1:numelements);
+% choose the subset of a you want
+Y_allDim_sample = Y_allDim(indices,:);
+
 %% Inference of Posterior distribution
 n_limit = 50000;
 iOpts.Inference.Data = PostSample2D(randi(size(PostSample2D,1),1,n_limit),[1 2]);
 iOpts.Copula.Type = 'auto';
-iOpts.Marginals(2).Type = {'Weibull','Gumbel'};
+% iOpts.Marginals(2).Type = {'Weibull','Gumbel'};
 PosteriorMarginal = uq_createInput(iOpts);
-posteriorSample = uq_getSample(PosteriorMarginal,10000,'lhs');
+posteriorSample = uq_getSample(PosteriorMarginal,5000,'lhs');
 %%
+% n_limit = 5000;
 figure
 PosteriorData = iOpts.Inference.Data;
+% extractedFromPosterior = PostSample2D(randi(size(PostSample2D,1),1,n_limit),[1 2]);
 inferredSample = posteriorSample;
 priorSample = exp_design_pce_eval(:,[1 6]);
 subplot_counter = 1;
@@ -457,6 +485,7 @@ for ii = 1:size(PosteriorData,2)
             Y = PosteriorData(:,[ii jj]);
             Y_inf = inferredSample(:,[ii jj]);
             Y_prior = priorSample(:,[ii jj]);
+            Y_extracted = Y_allDim_sample(:,[ii jj]);
             % - Prior sample -
             subPlotIdx = reshape( 1:(size(PosteriorData,2)^2),size(PosteriorData,2),size(PosteriorData,2));
             subplot(size(PosteriorData,2),size(PosteriorData,2),subPlotIdx(jj,ii))
@@ -465,7 +494,9 @@ for ii = 1:size(PosteriorData,2)
             % - Posterior sample -
             scatter(Y(:,1), Y(:,2), 1, 'r');
             % - inferred sample -
-            scatter(Y_inf(:,1), Y_inf(:,2), 1, 'k');
+%             scatter(Y_inf(:,1), Y_inf(:,2), [], 'k');
+            % - Posterior sample -
+            scatter(Y_extracted(:,1), Y_extracted(:,2), 1, 'm');
             xlabel(myBayesian_bothModels.Internal.FullPrior.Marginals(1).Name)
             ylabel(myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name)
             subplot_counter = subplot_counter + 1;
@@ -479,12 +510,12 @@ end
 %% save
 cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_7000\AIES\04_pleaseBeTheLastOne')
 save('_AIES_sim7000_1stRoundCalibration_done.mat','-v7.3')
-cd(root_destination)
+cd(root_destinationC)
 
 
 
 
-
+save('_EDforValidationRun_5000_noInference','Y_extracted')
 
 
 
