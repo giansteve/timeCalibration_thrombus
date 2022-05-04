@@ -474,6 +474,7 @@ for ii = 1:size(PosteriorData,2)
             maxProb_var(subplot_counter) = hX(idx_max);
             %             xline(maxProb_var(subplot_counter),'k-','LineWidth',1);
             xlabel(myBayesian_bothModels.Internal.FullPrior.Marginals(ii).Name)
+            xlim([0 max(priorSample(:,ii))])
             legend('prior','computed posterior','inferred posterior')
             subplot_counter = subplot_counter + 1;
         end
@@ -489,14 +490,14 @@ for ii = 1:size(PosteriorData,2)
             % - Prior sample -
             subPlotIdx = reshape( 1:(size(PosteriorData,2)^2),size(PosteriorData,2),size(PosteriorData,2));
             subplot(size(PosteriorData,2),size(PosteriorData,2),subPlotIdx(jj,ii))
-            scatter(Y_prior(:,1), Y_prior(:,2), 1, 'b');
+            scatter(priorSample(:,1), priorSample(:,2), 1, 'b');
             hold on
             % - Posterior sample -
-            scatter(Y(:,1), Y(:,2), 1, 'r');
+            scatter(PosteriorData(:,1), PosteriorData(:,2), 1, 'r');
             % - inferred sample -
 %             scatter(Y_inf(:,1), Y_inf(:,2), [], 'k');
             % - Posterior sample -
-            scatter(Y_extracted(:,1), Y_extracted(:,2), 1, 'm');
+            scatter(Y_allDim_sample(:,1), Y_allDim_sample(:,2), 1, 'm');
             xlabel(myBayesian_bothModels.Internal.FullPrior.Marginals(1).Name)
             ylabel(myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name)
             subplot_counter = subplot_counter + 1;
@@ -508,11 +509,11 @@ end
 
 
 %% save
-cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_7000\AIES\04_pleaseBeTheLastOne')
-save('_AIES_sim7000_1stRoundCalibration_done.mat','-v7.3')
+cd('M:\IFM\User\melito\PhD\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_7000\AIES\04_pleaseBeTheLastOne')
+save('_AIES_sim7000_1stRoundCalibration_done_newVersion.mat','-v7.3')
 cd(root_destinationC)
 
-
+Y_extracted = Y_allDim_sample;
 
 
 save('_EDforValidationRun_5000_noInference','Y_extracted')

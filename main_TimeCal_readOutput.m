@@ -10,13 +10,13 @@ set(groot, 'defaultLegendInterpreter','latex');
 set(0,'DefaultTextInterpreter','latex')
 set(0,'defaultAxesFontSize',11)
 
-cd M:\IFM\User\melito\Server\Projects\TimeCalibration
+% cd M:\IFM\User\melito\Server\Projects\TimeCalibration
 root_destination = pwd;
 addpath(root_destination)
 
-addpath('M:\IFM\User\melito\Server\Projects\matlab_funct\SA')
-addpath('M:\IFM\User\melito\Server\Projects\matlab_funct\general')
-addpath('M:\IFM\User\melito\Server\Projects\matlab_funct')
+addpath('C:\Users\gm20m18\Desktop\TimeCalibrationProject\TimeCalibration\matlab_funct\SA')
+addpath('C:\Users\gm20m18\Desktop\TimeCalibrationProject\TimeCalibration\matlab_funct\general')
+addpath('C:\Users\gm20m18\Desktop\TimeCalibrationProject\TimeCalibration\matlab_funct')
 
 %% Experimental Data
 % Human real-time
@@ -64,12 +64,12 @@ var_names = {'${D}_{\mathrm{c}}$','${k}_{\mathrm{c}}$','${k}_{\mathrm{{BP}}}$','
 
 %% Read input file
 myVars = {'INPUT','exp_design'};
-load('timeCal_00input_2000sims_3Mar22.mat',myVars{:})
+load('timeCal_00input_5000sims_1Apr22.mat',myVars{:})
 Ns = size(exp_design,1);
 M = size(exp_design,2);
 
 %% Output
-folderPath = 'TimeCal_Out_2000validCopula';
+folderPath = 'TimeCal_Out_validation5000';
 % Collect output from the solution files
 fprintf('Reading the output files ... \n')
 [OUTPUT,crushed_sim_idx] = timeCal_read_output(Ns,folderPath);
@@ -84,14 +84,14 @@ fprintf('Transforming output ... \n')
 
 % safe
 fprintf('Saving the workspace ... \n')
-destinationSave = 'M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_valid2000Copula';
+destinationSave = 'M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_valid5000noInfer';
 try
     cd(destinationSave)
 catch
     mkdir(destinationSave)
     cd(destinationSave)
 end
-save('RawOutput_03Mar22_2000sim.mat','-v7.3')
+save('RawOutput_01Apr22_5000sim.mat','-v7.3')
 cd(root_destination)
 % %% Statistics on the output
 % fprintf('Get the statistics ... \n')

@@ -5,13 +5,13 @@ clc
 root_destination = pwd;
 cd(root_destination)
 
-try
-    uqlab
-catch
-    cd /media/alireza/DATADRIVE1/Xu_Model/TimeCalibration_SA_newModel/UQLabCore_Rel1.3.0/core
-    uqlab_install
-    %     cd ../../
-end
+% try
+%     uqlab
+% catch
+%     cd /media/alireza/DATADRIVE1/Xu_Model/TimeCalibration_SA_newModel/UQLabCore_Rel1.3.0/core
+%     uqlab_install
+%     %     cd ../../
+% end
 
 cd(root_destination)
 
@@ -91,12 +91,13 @@ exp_design_var = Y_extracted;
 % merge
 exp_design = [exp_design_var(:,1) exp_design_const(:,(1:4)) exp_design_var(:,2) exp_design_const(:,5)];
 
+%%
 workspace_00 = sprintf('timeCal_00input_%dsims_%s.mat',Ns,datetime('now','Format','dMMMyy'));
 fprintf('Saving the workspace ... \n')
 save(workspace_00,'-v7.3')
 
 %% Create input env
-model_funct_TimeCal_v2_newModel(exp_design)
+% model_funct_TimeCal_v2_newModel(exp_design)
 
 
 
