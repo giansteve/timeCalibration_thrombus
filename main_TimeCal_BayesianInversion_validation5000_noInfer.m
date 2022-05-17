@@ -21,7 +21,7 @@ addpath(root_destination)
 % uqlab
 
 %% Load RawData
-load('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_valid5000noInfer\RawOutput_01Apr22_5000sim.mat')
+load('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_valid5000noInfer_final\RawOutput_04May22_5000sim.mat')
 
 %% Dealing with Experimental Data
 % ===============================SOURCE===================================
@@ -95,7 +95,7 @@ phic_LS_threshold = outToPCE.L_S;
 
 %% Define Input variables names
 var_names = {'${D}_{\mathrm{c}}$',...
-    '${\dot{\gamma}}$'};
+    '$\langle{\dot{\gamma}}\langle_\mathrm{t} $'};
 
 %% Statistics on the input
 fprintf('Get statistics INPUT ... \n')
@@ -124,7 +124,7 @@ catch
     mkdir(dest_plot)
     cd(dest_plot)
 end
-timeCal_statisticsOutput(phic_HS_threshold,phic_LS_threshold,fittedData);
+timeCal_statisticsOutput(phic_HS_threshold,phic_LS_threshold,human_thr);
 cd(root_destination)
 
 

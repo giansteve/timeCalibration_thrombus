@@ -9,7 +9,7 @@ OUT_time_norm = linspace(0,1,size(OUT_HS,1));
 % H/S
 figure('Visible','off')
 timeCal_signalStatsPlot(OUT_time_norm,OUT_HS)
-plot(OUT_time_norm,fittedData.H_S,'r','LineWidth',1)
+plot(linspace(0,1,7),fittedData.H_S(:,1),'r')
 legend('median','mean','+ 1 std','- 1 std','data','Location','best')
 
 % xlim([min(min(output_matrix.time)) max(max(output_matrix.time))])
@@ -24,7 +24,7 @@ GM_printEPS(300,300,'stats_H_S')
 % L/S
 figure('Visible','off')
 timeCal_signalStatsPlot(OUT_time_norm,OUT_LS)
-plot(OUT_time_norm,fittedData.L_S,'r','LineWidth',1)
+plot(linspace(0,1,7),fittedData.L_S(:,1),'r')
 legend('median','mean','+ 1 std','- 1 std','data','Location','best')
 % xlim([min(min(output_matrix.time)) max(max(output_matrix.time))])
 % ylim([0 30])

@@ -8,7 +8,7 @@ subplot(121) % H/S
 histogram(OUT_HS(end,:),'FaceColor','r','Normalization','probability')
 hold on
 xline(fittedData.H_S(end),'k','LineWidth',3);
-% xlim([0.5 1]);
+xlim([0.5 1.1]);
 grid on
 legend('$H/S$','MRI','Location','nw')
 

@@ -241,6 +241,7 @@ elseif strcmpi(inversion_type,'aies') % AIES algorithm
     % results are stored into myBayesian.Results
     % generate good posterior sample with
     uq_postProcessInversion(myBayesian_bothModels,...
+        'priorPredictive',1000,...
         'burnIn', 0.60,... % specify the fraction of samples discarded as burn-in
         'pointEstimate',{'Mean','MAP'},... % compute 'Mean': empirical mean from sample; 'MAP': maximum posterior probability from sample
         'gelmanRubin',true... % multivariate potential scale reduction factor is computed [convergence at 1]
@@ -259,7 +260,7 @@ elseif strcmpi(inversion_type,'aies') % AIES algorithm
     myBayesian_bothModels.Internal.FullPrior.Marginals(3).Name = '$\epsilon_{HS}$';
     myBayesian_bothModels.Internal.FullPrior.Marginals(4).Name = '$\epsilon_{LS}$'; % reChange name back to original
     
-    % uq_display(myBayesian_bothModels)
+    uq_display(myBayesian_bothModels)
     uq_display(myBayesian_bothModels,...
         'scatterplot','all',... % plot an M dimensional scatterpplot of the sample
         'trace','all',... % trace plot of MCMC chains
@@ -274,9 +275,60 @@ elseif strcmpi(inversion_type,'aies') % AIES algorithm
     cd(root_destinationC)
 end
 
-
-
-
+%% Test violin plot
+% prior
+hh = [];
+tbl_exp_prior = [];
+figure
+for kk = 1:2
+    subplot(1,2,kk)
+    Y = myBayesian_bothModels.Results.PostProc.PriorPredSample(kk).Sample;
+    for ii = 1:size(Y,2)
+        % Create kernel density
+        currRuns = Y(:,ii);
+        [f,xi] = ksdensity(currRuns);
+        % Scale and shift
+        patchF = [f -fliplr(f)];
+        patchF = patchF / (2*max(patchF));
+        %         if exist('X','var')
+        %             patchF = patchF + X(ii);
+        %         else
+        patchF = patchF + ii;
+        %         end
+        % Create the violin plot
+        tbl_exp_prior = [tbl_exp_prior patchF(1:100)' flipud(patchF(101:end)') xi' fliplr(xi')];
+        hh = [...
+            hh;
+            patch(patchF, [xi fliplr(xi)], 'b')];
+    end
+end
+% posterior
+hh = [];
+tbl_exp_post = [];
+hold on
+for kk = 1:2
+    subplot(1,2,kk)
+    Y = myBayesian_bothModels.Results.PostProc.PostPredSample(kk).Sample;
+    for ii = 1:size(Y,2)
+        % Create kernel density
+        currRuns = Y(:,ii);
+        [f,xi] = ksdensity(currRuns);
+        %         tbl_exp_post = [tbl_exp_post f' -(f') xi' fliplr(xi')];
+        % Scale and shift
+        patchF = [f -fliplr(f)];
+        patchF = patchF / (2*max(patchF));
+        %         if exist('X','var')
+        %             patchF = patchF + X(ii);
+        %         else
+        patchF = patchF + ii;
+        %         end
+        % Create the violin plot
+        tbl_exp_post = [tbl_exp_post patchF(1:100)' flipud(patchF(101:end)') xi' fliplr(xi')];
+        hh = [...
+            hh;
+            patch(patchF, [xi fliplr(xi)], 'r')];
+    end
+end
 %% Plot Bayesian results
 % Copying data int local variables to be used as input for
 % mod_UQLab_plotSeriesPred_2021 in the following
@@ -365,10 +417,10 @@ else % show discrepancy inversion posterior
                 colorVec = colorFrac'*colorRange(2,:) + (1-colorFrac')*colorRange(1,:);
                 normfac = 1/(sum(hY*mean(diff(hX))));
                 hY = hY*normfac;
-%                 hh = histogram(Y_allDim(:,ii),'Normalization','probability');
+                %                 hh = histogram(Y_allDim(:,ii),'Normalization','probability');
                 bar(hX,hY./(size(Y_allDim,1).*hX),'BarWidth',1,'CData',colorVec,'FaceColor','flat','EdgeAlpha',0)
                 hold on
-%                 hhuni = histogram(exp_design(:,nonConstVec(ii)),'Normalization','probability');
+                %                 hhuni = histogram(exp_design(:,nonConstVec(ii)),'Normalization','probability');
                 maxProb_var(subplot_counter) = hX(idx_max);
                 xline(maxProb_var(subplot_counter),'r','LineWidth',1);
                 %                 xline(myBayesian_bothModels.Results.PostProc.PointEstimate.X{1,2}(1),'r');
@@ -495,7 +547,7 @@ for ii = 1:size(PosteriorData,2)
             % - Posterior sample -
             scatter(PosteriorData(:,1), PosteriorData(:,2), 1, 'r');
             % - inferred sample -
-%             scatter(Y_inf(:,1), Y_inf(:,2), [], 'k');
+            %             scatter(Y_inf(:,1), Y_inf(:,2), [], 'k');
             % - Posterior sample -
             scatter(Y_allDim_sample(:,1), Y_allDim_sample(:,2), 1, 'm');
             xlabel(myBayesian_bothModels.Internal.FullPrior.Marginals(1).Name)
