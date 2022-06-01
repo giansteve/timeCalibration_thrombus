@@ -21,7 +21,7 @@ addpath(root_destinationC)
 % uqlab
 
 %% Load post PCE file
-load('M:\IFM\User\melito\PhD\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration2_7000\TimeCal2_postSurrogate_AliModel7000.mat')
+load('M:\IFM\User\melito\PhD\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_7000\TimeCal_postSurrogate_AliModel7000.mat')
 
 %% Surrogate accuracy display
 % generate surrogate evaluations
@@ -32,7 +32,7 @@ Y_pce_LS = uq_evalModel(PCE_LS,exp_design_pce_eval);
 % plot
 cd(root_destinationC)
 try
-    dest_plot = sprintf('Plot_AliModel_Calibration2\\Surrogate');
+    dest_plot = sprintf('Plot_AliModel_Calibration\\Surrogate');
     cd(dest_plot)
 catch
     mkdir(dest_plot)
@@ -84,22 +84,40 @@ cd(root_destinationC)
 %% Perform sensitivity analysis
 % the probability distributions of the data will not be transformed. First
 % test is given in this case. In case of error, review this part.
-[SA_HS.main,SA_HS.total] = SA_time(PCE_HS.PCE,M);
-[SA_LS.main,SA_LS.total] = SA_time(PCE_LS.PCE,M);
+for time_inst = 1:7
+    [SA_HSmain(time_inst,:),SA_HStot(time_inst,:),~] = SA_Sobols(PCE_HS.PCE(time_inst),M,var_names,0);
+    [SA_LSmain(time_inst,:),SA_LStot(time_inst,:),~] = SA_Sobols(PCE_LS.PCE(time_inst),M,var_names,0);
+end
 cd(root_destinationC)
 try
-    dest_SAplot = sprintf('Plot_AliModel_Calibration2\\SA');
+    dest_SAplot = sprintf('Plot_AliModel_Calibration\\SA');
     cd(dest_SAplot)
 catch
     mkdir(dest_SAplot)
     cd(dest_SAplot)
 end
-SA_plot_time(SA_HS,linspace(0,1,size(SA_HS.main,1)),'SA_HS','$t^*$')
+figure('Visible','off')
+subplot(211)
+plot(SA_HSmain)
+ylabel('$S_{\mathrm{{i}}}$ [-]','Interpreter','latex')
+subplot(212)
+plot(SA_HStot)
+ylabel('$S^{\mathrm{{T}}}_{\mathrm{{i}}}$ [-]','Interpreter','latex')
+xlabel('$t^*$')
+% SA_plot_time(SA_HS,linspace(0,1,size(SA_HS.main,1)),'SA_HS','$t^*$')
 subplot(211); legend(var_names,'Interpreter','latex','Location','bestoutside')
 GM_printBMP(400,400,'SA_HS')
 GM_printEPS(400,400,'SA_HS')
 
-SA_plot_time(SA_LS,linspace(0,1,size(SA_LS.main,1)),'SA_LS','$t^*$')
+figure('Visible','off')
+subplot(211)
+plot(SA_LSmain)
+ylabel('$S_{\mathrm{{i}}}$ [-]','Interpreter','latex')
+subplot(212)
+plot(SA_LStot)
+ylabel('$S^{\mathrm{{T}}}_{\mathrm{{i}}}$ [-]','Interpreter','latex')
+xlabel('$t^*$')
+% SA_plot_time(SA_LS,linspace(0,1,size(SA_LS.main,1)),'SA_LS','$t^*$')
 subplot(211); legend(var_names,'Interpreter','latex','Location','bestoutside')
 GM_printBMP(400,400,'SA_LS')
 GM_printEPS(400,400,'SA_LS')
