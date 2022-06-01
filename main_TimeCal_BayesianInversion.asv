@@ -231,15 +231,16 @@ for time_inst = 1:7
         %         'acceptance',true... % acceptance ratio for all chains
         %         )
 
-        % save
-        %     cd('C:\Users\gm20m18\Desktop\TimeCalibrationProject\TimeCalibration\storageFiles_noGitHub\TimeCal2_Calibration\AIES')
-        %     saveName = sprintf('_AIES_Steps%dNChain%d_TimeCal_AliModel00_gaussianDiscrepancy.mat',bayesOpts.Solver.MCMC.Steps,bayesOpts.Solver.MCMC.NChains);
-        %     save(saveName,'-v7.3')
-        %     cd(root_destinationC)
+        
     end
 end
+% save
+cd('C:\Users\gm20m18\Desktop\TimeCalibrationProject\TimeCalibration\storageFiles_noGitHub\TimeCal2_Calibration\AIES')
+saveName = sprintf('_AIES_HS_Steps%dNChain%d_TimeCal2_AliMode7000_gaussDiscr.mat',bayesOpts.Solver.MCMC.Steps,bayesOpts.Solver.MCMC.NChains);
+save(saveName,'-v7.3')
+cd(root_destinationC)
 
-%% prepare for Bayesian Inverse problem: LS
+% prepare for Bayesian Inverse problem: LS
 inversion_type = 'aies';
 rng(100)
 clear('bayesOpts','myPriorDist','ForwardModels','myData','discrepancyOpts')
@@ -281,8 +282,8 @@ for time_inst = 1:7
         bayesOpts.Solver.MCMC.Steps = 1000; % scalar to impose number of iterations
         bayesOpts.Solver.MCMC.NChains = 100; % number of chains: starting point in the input domain per dimension
         % live visualization, enable only for mistuning check
-        bayesOpts.Solver.MCMC.Visualize.Parameters = [1;2];
-        bayesOpts.Solver.MCMC.Visualize.Interval = 250; % every xx steps
+%         bayesOpts.Solver.MCMC.Visualize.Parameters = [1;2];
+%         bayesOpts.Solver.MCMC.Visualize.Interval = 250; % every xx steps
         % RUN IT FORREST
         myBayesian_LS(time_inst) = uq_createAnalysis(bayesOpts);
 
@@ -306,7 +307,7 @@ for time_inst = 1:7
         myBayesian_LS(time_inst).Internal.FullPrior.Marginals(3).Name = '$\epsilon_{HS}$';
         %     myBayesian_bothModels.Internal.FullPrior.Marginals(4).Name = '$\epsilon_{LS}$'; % reChange name back to original
 
-        uq_display(myBayesian_LS(time_inst))
+%         uq_display(myBayesian_LS(time_inst))
         %     uq_display(myBayesian_bothModels,...
         %         'scatterplot','none',... % plot an M dimensional scatterpplot of the sample
         %         'trace','all',... % trace plot of MCMC chains
@@ -361,13 +362,14 @@ for time_inst = 1:7
         %         'acceptance',true... % acceptance ratio for all chains
         %         )
 
-        % save
-        %     cd('C:\Users\gm20m18\Desktop\TimeCalibrationProject\TimeCalibration\storageFiles_noGitHub\TimeCal2_Calibration\AIES')
-        %     saveName = sprintf('_AIES_Steps%dNChain%d_TimeCal_AliModel00_gaussianDiscrepancy.mat',bayesOpts.Solver.MCMC.Steps,bayesOpts.Solver.MCMC.NChains);
-        %     save(saveName,'-v7.3')
-        %     cd(root_destinationC)
+        
     end
 end
+% save
+cd('C:\Users\gm20m18\Desktop\TimeCalibrationProject\TimeCalibration\storageFiles_noGitHub\TimeCal2_Calibration\AIES')
+saveName = sprintf('_AIES_LS_Steps%dNChain%d_TimeCal2_AliMode7000_gaussDiscr.mat',bayesOpts.Solver.MCMC.Steps,bayesOpts.Solver.MCMC.NChains);
+save(saveName,'-v7.3')
+cd(root_destinationC)
 
 %% Test violin plot
 % prior
