@@ -82,7 +82,7 @@ human_thr.growthRate.exposedArea = diff(fittedData.SA)/(deltaT);    % m^2/min
 folderPath = 'TimeCal_MRIdata';
 cd(root_destinationC)
 try
-    dest_plot = sprintf('Plot_AliModel_Calibration\\%s',folderPath);
+    dest_plot = sprintf('Plot_AliModel_Calibration2\\%s',folderPath);
     cd(dest_plot)
 catch
     mkdir(dest_plot)
@@ -94,12 +94,12 @@ cd(root_destinationC)
 
 %% Read input file
 myVars = {'INPUT','exp_design'};
-load('timeCal_00input_7000sims_3Feb22.mat',myVars{:})
+load('timeCal2_00input_7000sims_19May22.mat',myVars{:})
 
 %% Load output: H/S and L/S
 
 % load('RawOutput_25Jan22_5000sim.mat')
-load('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_7000\RawOutput_07Feb22_7000sim.mat')
+load('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_v2\RawOutput_19May22_7000sim.mat')
 phic_HS_threshold = outToPCE.H_S;
 phic_LS_threshold = outToPCE.L_S;
 
@@ -109,19 +109,13 @@ Ns = size(exp_design,1);
 M = size(exp_design,2);
 
 %% Define Input variables names
-var_names = {'${D}_{\mathrm{c}}$',...
-    '${k}_{\mathrm{c}}$',...
-    '$c_\mathrm{t}$',...
-    '${k}_{\mathrm{cw}}$',...
-    '${c}_{\mathrm{{BPt}}}$',...
-    '${\dot{\gamma}}$',...
-    '${\dot{\gamma}}_\mathrm{inst}$'};
+var_names = {'${D}_{\mathrm{c}}$','$\langle\dot{\gamma}\rangle_t$'};
 
 %% Statistics on the input
 fprintf('Get statistics INPUT ... \n')
 cd(root_destinationC)
 try
-    dest_plot = sprintf('Plot_AliModel_Calibration\\StatsInput');
+    dest_plot = sprintf('Plot_AliModel_Calibration2\\StatsInput');
     cd(dest_plot)
 catch
     mkdir(dest_plot)
@@ -138,13 +132,13 @@ cd(root_destinationC)
 fprintf('Get statistics OUTPUT ... \n')
 cd(root_destinationC)
 try
-    dest_plot = sprintf('Plot_AliModel_Calibration\\StatsOutput');
+    dest_plot = sprintf('Plot_AliModel_Calibration2\\StatsOutput');
     cd(dest_plot)
 catch
     mkdir(dest_plot)
     cd(dest_plot)
 end
-timeCal_statisticsOutput(phic_HS_threshold,phic_LS_threshold,fittedData);
+timeCal_statisticsOutput(phic_HS_threshold,phic_LS_threshold,human_thr);
 cd(root_destinationC)
 
 %% Create metamodel of the thrombus model
@@ -153,25 +147,25 @@ MRI_time_index = round(linspace(1,61,7));
 metamodel.Type = 'Metamodel';
 metamodel.MetaType = 'PCE';
 metamodel.Display = 'verbose';
-metamodel.Method = 'ols';
-metamodel.Degree = 6:13;
-metamodel.TruncOptions.qNorm = [0.9 0.95 0.975];
+% metamodel.Method = 'ols';
+metamodel.Degree = 2:20;
+metamodel.TruncOptions.qNorm = [0.7 0.75 0.8 0.85 0.9 0.95 0.975];
 metamodel.DegreeEarlyStop = false;
 metamodel.Input = INPUT;
 metamodel.ExpDesign.NSamples = Ns;
 metamodel.ExpDesign.X = exp_design;
 % PCE H/S
-metamodel.ExpDesign.Y = phic_HS_threshold(MRI_time_index(end),:)';
+metamodel.ExpDesign.Y = phic_HS_threshold(MRI_time_index,:)';
 PCE_HS = uq_createModel(metamodel);
 % PCE L/S
-metamodel.ExpDesign.Y = phic_LS_threshold(MRI_time_index(end),:)';
+metamodel.ExpDesign.Y = phic_LS_threshold(MRI_time_index,:)';
 PCE_LS = uq_createModel(metamodel);
 
 % save PS: remember to create function to save in specific folder with the
 % date :)
-% cd('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_7000')
-% % save('TimeCal_postSurrogate_AliModel7000') % moved saved file to storing folder (NoGitHub)
-% cd(root_destinationC)
+cd('M:\IFM\User\melito\PhD\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration2_7000')
+save('TimeCal2_postSurrogate_AliModel7000') % moved saved file to storing folder (NoGitHub)
+cd(root_destinationC)
 
 
 

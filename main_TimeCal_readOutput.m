@@ -58,18 +58,16 @@ addpath('C:\Users\gm20m18\Desktop\TimeCalibrationProject\TimeCalibration\matlab_
 % human_thr.growthRate.exposedArea = diff(fittedData.SA)/(fittedData.time(2));% m^2/min
 
 %% Input
-var_names = {'${D}_{\mathrm{c}}$','${k}_{\mathrm{c}}$','${k}_{\mathrm{{BP}}}$','${c}_{\mathrm{t}}$',...
-    '${c}_{\mathrm{{BPt}}}$','$\overline{T}_{\mathrm{Rt}}$','${k}_{\mathrm{{c,wall}}}$',...
-    '${c}_{\mathrm{{AP}}}$','${c}_{\mathrm{{BPbt}}}$','$\dot{\overline{\gamma}}_t$'};
+var_names = {'${D}_{\mathrm{c}}$','$\langle\dot{\gamma}\rangle_t$'};
 
 %% Read input file
 myVars = {'INPUT','exp_design'};
-load('timeCal_00input_5000sims_4May22.mat',myVars{:})
+load('timeCal2_00input_7000sims_19May22.mat',myVars{:})
 Ns = size(exp_design,1);
 M = size(exp_design,2);
 
 %% Output
-folderPath = 'TimeCal_validation5000_finalSims';
+folderPath = 'TimeCalibration2_7000';
 % Collect output from the solution files
 fprintf('Reading the output files ... \n')
 [OUTPUT,crushed_sim_idx] = timeCal_read_output(Ns,folderPath);
@@ -84,14 +82,14 @@ fprintf('Transforming output ... \n')
 
 % safe
 fprintf('Saving the workspace ... \n')
-destinationSave = 'M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_valid5000noInfer_final';
+destinationSave = 'M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_v2';
 try
     cd(destinationSave)
 catch
     mkdir(destinationSave)
     cd(destinationSave)
 end
-save('RawOutput_04May22_5000sim.mat','-v7.3')
+save('RawOutput_19May22_7000sim.mat','-v7.3')
 cd(root_destination)
 % %% Statistics on the output
 % fprintf('Get the statistics ... \n')
