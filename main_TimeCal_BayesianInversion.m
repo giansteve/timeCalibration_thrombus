@@ -21,8 +21,9 @@ addpath(root_destinationC)
 % uqlab
 
 %% Load post PCE file
-load('M:\IFM\User\melito\Server\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_7000\TimeCal_postSurrogate_AliModel7000.mat')
-
+load('M:\IFM\User\melito\PhD\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_7000\TimeCal_postSurrogate_AliModel7000.mat')
+% load('M:\IFM\User\melito\PhD\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration2_7000\TimeCal2_postSurrogate_AliModel7000.mat')
+MAT = [linspace(0,1,61)' mean(phic_HS_threshold')' median(phic_HS_threshold')' mean(phic_HS_threshold')'-std(phic_HS_threshold')' mean(phic_HS_threshold')'+std(phic_HS_threshold')' mean(phic_LS_threshold')' median(phic_LS_threshold')' mean(phic_LS_threshold')'-std(phic_LS_threshold')' mean(phic_LS_threshold')'+std(phic_LS_threshold')'];
 %% Surrogate accuracy display
 % generate surrogate evaluations
 % exp_design_pce_eval = uq_getSample(INPUT,7000,'sobol');
@@ -32,7 +33,7 @@ Y_pce_LS = uq_evalModel(PCE_LS,exp_design_pce_eval);
 % plot
 cd(root_destinationC)
 try
-    dest_plot = sprintf('Plot_AliModel_Calibration\\Surrogate');
+    dest_plot = sprintf('Plot_AliModel_Calibration2_timeYES\\Surrogate');
     cd(dest_plot)
 catch
     mkdir(dest_plot)
@@ -81,7 +82,7 @@ cd(root_destinationC)
 [SA_LS.main,SA_LS.total] = SA_time(PCE_LS.PCE,M);
 cd(root_destinationC)
 try
-    dest_SAplot = sprintf('Plot_AliModel_Calibration\\SA');
+    dest_SAplot = sprintf('Plot_AliModel_Calibration2_timeYES\\SA');
     cd(dest_SAplot)
 catch
     mkdir(dest_SAplot)
@@ -106,21 +107,21 @@ clc
 
 % 1. create PRIOR: the input PDF of my model parameters, considering the SA
 % results. We want to find the POSTERIOR of only the sensitivite parameters
-bounds_prior = [min(exp_design); max(exp_design)];
-sensitivite_param = [1 6];
-nonSensitive_param = [2 3 4 5 7];
-for m = 1:M
-    if logical(sum(eq(m,nonSensitive_param)))
-        prior.Marginals(m).Name = var_names{m};
-        prior.Marginals(m).Type = 'Constant';
-        prior.Marginals(m).Parameters = mean(bounds_prior(:,m));
-    else
-        prior.Marginals(m).Name = var_names{m};
-        prior.Marginals(m).Type = 'Uniform';
-        prior.Marginals(m).Parameters = bounds_prior(:,m);
-    end
-end
-myPriorDist = uq_createInput(prior);
+% bounds_prior = [min(exp_design); max(exp_design)];
+% sensitivite_param = [1 6];
+% nonSensitive_param = [2 3 4 5 7];
+% for m = 1:M
+%     if logical(sum(eq(m,nonSensitive_param)))
+%         prior.Marginals(m).Name = var_names{m};
+%         prior.Marginals(m).Type = 'Constant';
+%         prior.Marginals(m).Parameters = mean(bounds_prior(:,m));
+%     else
+%         prior.Marginals(m).Name = var_names{m};
+%         prior.Marginals(m).Type = 'Uniform';
+%         prior.Marginals(m).Parameters = bounds_prior(:,m);
+%     end
+% end
+myPriorDist = INPUT;
 
 % TRY TO COMPUTE FROM SECOND TIME STEP
 
@@ -128,9 +129,9 @@ myPriorDist = uq_createInput(prior);
 % bayesOpts_HS.ForwardModel = PCE_HS;
 % bayesOpts_LS.ForwardModel = PCE_LS;
 ForwardModels(1).Model = PCE_HS;
-ForwardModels(1).PMap = [1 2 3 4 5 6 7];
+ForwardModels(1).PMap = [1 2];
 ForwardModels(2).Model = PCE_LS;
-ForwardModels(2).PMap = [1 2 3 4 5 6 7];
+ForwardModels(2).PMap = [1 2];
 bayesOpts.ForwardModel = ForwardModels;
 
 % 3. provide measurements
@@ -180,13 +181,13 @@ bayesOpts.Discrepancy = discrepancyOpts;
 
 if strcmpi(inversion_type,'MH')
     % 5. chose the solver
-    bayesOpts.solver.Type = 'MCMC';
-    bayesOpts.solver.MCMC.Sampler = 'MH'; % metropolis-hasting
-    bayesOpts.solver.MCMC.Steps = 5000; % scalar to impose number of iterations
-    bayesOpts.solver.MCMC.NChains = 250; % number of chains: starting point in the input domain per dimension
+    bayesOpts.Solver.Type = 'MCMC';
+    bayesOpts.Solver.MCMC.Sampler = 'MH'; % metropolis-hasting
+    bayesOpts.Solver.MCMC.Steps = 5000; % scalar to impose number of iterations
+    bayesOpts.Solver.MCMC.NChains = 250; % number of chains: starting point in the input domain per dimension
     % live visualization, enable only for mistuning check
-    bayesOpts.solver.MCMC.Visualize.Parameters = [1;2];
-    bayesOpts.solver.MCMC.Visualize.Interval = 250; % every xx steps
+    bayesOpts.Solver.MCMC.Visualize.Parameters = [1;2];
+    bayesOpts.Solver.MCMC.Visualize.Interval = 250; % every xx steps
     % RUN IT FORREST
     myBayesian_bothModels = uq_createAnalysis(bayesOpts);
     
@@ -221,20 +222,20 @@ if strcmpi(inversion_type,'MH')
     
     % save
     cd('C:\Users\gm20m18\Desktop\TimeCalibrationProject\TimeCalibration\storageFiles_noGitHub\FirstRoundCalibration\MH')
-    saveName = sprintf('_MH_Steps%dNChain%d_TimeCal_AliModel00_jeffreysDiscrepancy.mat',bayesOpts.solver.MCMC.Steps,bayesOpts.solver.MCMC.NChains);
+    saveName = sprintf('_MH_Steps%dNChain%d_TimeCal_AliModel00_jeffreysDiscrepancy.mat',bayesOpts.Solver.MCMC.Steps,bayesOpts.Solver.MCMC.NChains);
     save(saveName,'-v7.3')
     cd(root_destinationC)
     
 elseif strcmpi(inversion_type,'aies') % AIES algorithm
     % 5. chose the solver
-    bayesOpts.solver.Type = 'MCMC';
-    bayesOpts.solver.MCMC.Sampler = 'AIES'; % metropolis-hasting
-    bayesOpts.solver.MCMC.Steps = 9000; % default: 300
-    bayesOpts.solver.MCMC.NChains = 200; % default: 100
-    bayesOpts.solver.MCMC.a = 2; % scalar for the AIES solver
+    bayesOpts.Solver.Type = 'MCMC';
+    bayesOpts.Solver.MCMC.Sampler = 'AIES'; % metropolis-hasting
+    bayesOpts.Solver.MCMC.Steps = 1000; % default: 300
+    bayesOpts.Solver.MCMC.NChains = 200; % default: 100
+    bayesOpts.Solver.MCMC.a = 2; % scalar for the AIES solver
     % live visualization, enable only for mistuning check
-    bayesOpts.solver.MCMC.Visualize.Parameters = [1;2];
-    bayesOpts.solver.MCMC.Visualize.Interval = 250; % every xx steps
+%     bayesOpts.Solver.MCMC.Visualize.Parameters = [1;2];
+%     bayesOpts.Solver.MCMC.Visualize.Interval = 250; % every xx steps
     % RUN IT FORREST
     myBayesian_bothModels = uq_createAnalysis(bayesOpts);
     
@@ -256,21 +257,21 @@ elseif strcmpi(inversion_type,'aies') % AIES algorithm
     uq_print(myBayesian_bothModels)
     myBayesian_bothModels.Internal.FullPrior.Marginals(1).Name = var_names{1};
     %     myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = var_names{3};
-    myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = var_names{6};
+    myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name = var_names{2};
     myBayesian_bothModels.Internal.FullPrior.Marginals(3).Name = '$\epsilon_{HS}$';
     myBayesian_bothModels.Internal.FullPrior.Marginals(4).Name = '$\epsilon_{LS}$'; % reChange name back to original
     
     uq_display(myBayesian_bothModels)
-    uq_display(myBayesian_bothModels,...
-        'scatterplot','all',... % plot an M dimensional scatterpplot of the sample
-        'trace','all',... % trace plot of MCMC chains
-        'meanConvergence','all',... % convergence plot of the empirical mean
-        'acceptance',true... % acceptance ratio for all chains
-        )
+%     uq_display(myBayesian_bothModels,...
+%         'scatterplot','all',... % plot an M dimensional scatterpplot of the sample
+%         'trace','all',... % trace plot of MCMC chains
+%         'meanConvergence','all',... % convergence plot of the empirical mean
+%         'acceptance',true... % acceptance ratio for all chains
+%         )
     
     % save
-    cd('C:\Users\gm20m18\Desktop\TimeCalibrationProject\TimeCalibration\storageFiles_noGitHub\FirstRoundCalibration\AIES')
-    saveName = sprintf('_AIES_Steps%dNChain%d_TimeCal_AliModel00_gaussianDiscrepancy.mat',bayesOpts.solver.MCMC.Steps,bayesOpts.solver.MCMC.NChains);
+    cd('C:\Users\gm20m18\Desktop\TimeCalibrationProject\TimeCalibration\storageFiles_noGitHub\TimeCal2_Calibration_timeYES\AIES')
+    saveName = sprintf('_AIES_Steps%dNChain%d_TimeCal2_AliModel00_gaussianDiscrepancy.mat',bayesOpts.Solver.MCMC.Steps,bayesOpts.Solver.MCMC.NChains);
     save(saveName,'-v7.3')
     cd(root_destinationC)
 end
@@ -332,11 +333,11 @@ end
 %% Plot Bayesian results
 % Copying data int local variables to be used as input for
 % mod_UQLab_plotSeriesPred_2021 in the following
-myData_bayes = myBayesian_bothModels.Data(1);
-mySamples.PostPred = myBayesian_bothModels.Results.PostProc.PostPredSample(1).PostPred;
-mySamples.Post = myBayesian_bothModels.Results.PostProc.PostPredSample(1).Post;
-myPointEstimate = myBayesian_bothModels.Results.PostProc.PointEstimate.ForwardRun{1,2};
-
+% myData_bayes = myBayesian_bothModels.Data(1);
+% mySamples.PostPred = myBayesian_bothModels.Results.PostProc.PostPredSample(1).PostPred;
+% mySamples.Post = myBayesian_bothModels.Results.PostProc.PostPredSample(1).Post;
+% myPointEstimate = myBayesian_bothModels.Results.PostProc.PointEstimate.ForwardRun{1,2};
+% 
 PostSample3D = myBayesian_bothModels.Results.PostProc.PostSample;
 PostSample2D = reshape(permute(PostSample3D, [2 1 3]), size(PostSample3D, 2), []).';
 
@@ -345,7 +346,7 @@ PostSample2D = reshape(permute(PostSample3D, [2 1 3]), size(PostSample3D, 2), []
 
 colorRange = [.6 .6 .6;
     0.0 0.0 0.0];
-n_limit = 25000;
+n_limit = 5000;
 discrepancyAsVariable = true; % if discrepancy is also inverted in Bayesian
 numOutput = 2; % number of outputs
 nonConstVec = [1,6];
@@ -412,18 +413,10 @@ else % show discrepancy inversion posterior
                 nBins = max(ceil(range(Y)/w),1);     % Number of histograms
                 [hY,hX] = hist(Y,nBins);
                 [~,idx_max] = max(hY);
-                % compute color for each bar
-                colorFrac = hY./max(hY);
-                colorVec = colorFrac'*colorRange(2,:) + (1-colorFrac')*colorRange(1,:);
-                normfac = 1/(sum(hY*mean(diff(hX))));
+                normfac = 1/length(Y_allDim);
                 hY = hY*normfac;
-                %                 hh = histogram(Y_allDim(:,ii),'Normalization','probability');
-                bar(hX,hY./(size(Y_allDim,1).*hX),'BarWidth',1,'CData',colorVec,'FaceColor','flat','EdgeAlpha',0)
+                bar(hX,hY)
                 hold on
-                %                 hhuni = histogram(exp_design(:,nonConstVec(ii)),'Normalization','probability');
-                maxProb_var(subplot_counter) = hX(idx_max);
-                xline(maxProb_var(subplot_counter),'r','LineWidth',1);
-                %                 xline(myBayesian_bothModels.Results.PostProc.PointEstimate.X{1,2}(1),'r');
                 xlabel(myBayesian_bothModels.Internal.FullPrior.Marginals(ii).Name)
                 subplot_counter = subplot_counter + 1;
             end
@@ -437,18 +430,9 @@ else % show discrepancy inversion posterior
                 subplot(size(Y_allDim,2),size(Y_allDim,2),subPlotIdx(jj,ii))
                 [N,~,~,binX,binY] = histcounts2(Y(:,1), Y(:,2));
                 [NX, NY] = size(N);
-                % loop over bins
-                CurrColorVec = nan(size(Y,1),3);
-                for kk = 1:length(N(:))
-                    [xk,yk] = ind2sub(size(N),kk);
-                    currFrac = N(xk,yk)/max(N(:));
-                    currColor = (currFrac)*colorRange(2,:) + (1-currFrac)*colorRange(1,:);
-                    currPointIds = xk == binX & yk == binY;
-                    CurrColorVec(currPointIds,:) = repmat(currColor,sum(currPointIds),1);
-                end
-                scatter(Y(:,1), Y(:,2), 2, CurrColorVec);
-                xline(maxProb_var(ii),'r','LineWidth',1);
-                yline(maxProb_var(jj),'r','LineWidth',1);
+                scatter(Y(:,1), Y(:,2), 2, [0 0 0],'MarkerEdgeAlpha',0.05);
+                hold on
+%                 fplot(@(x) 4.282*exp(-2.354e6*x) + 0.1245*exp(3.01e6*x))
                 subplot_counter = subplot_counter + 1;
             else % leave blank
                 subplot_counter = subplot_counter + 1;
@@ -457,118 +441,34 @@ else % show discrepancy inversion posterior
     end
 end
 
-%% fit posterior
-[fitData.ff_postDcGam,fitData.gof_postDcGam] = fit(Y_allDim(:,1),Y_allDim(:,2),'exp2');
+%% generate samples for validation
 % random select element of Y_allDim
 % determine how many elements is ten percent
-numelements = 5000;
+numelements = 500;
 % get the randomly-selected indices
 indices = randperm(length(Y_allDim));
 indices = indices(1:numelements);
 % choose the subset of a you want
 Y_allDim_sample = Y_allDim(indices,:);
+xxx = Y_allDim_sample(:,1);
+yyy = Y_allDim_sample(:,2);
+figure;plot(yyy,xxx,'.');hold on;
+[fitData.ff_postDcGam,fitData.gof_postDcGam] = fit(yyy,xxx,'poly2');
+fplot(@(x) fitData.ff_postDcGam.p1*x^2+fitData.ff_postDcGam.p2*x+fitData.ff_postDcGam.p3,'LineWidth',1,'Color','k')
+% fplot(@(x) fitData.ff_postDcGam.a*exp(fitData.ff_postDcGam.b*x) + fitData.ff_postDcGam.c*exp(fitData.ff_postDcGam.d*x),'LineWidth',1,'Color','k')
+xlim([min(yyy) max(yyy)])
+ylim([min(xxx) max(xxx)])
 
-%% Inference of Posterior distribution
-n_limit = 50000;
-iOpts.Inference.Data = PostSample2D(randi(size(PostSample2D,1),1,n_limit),[1 2]);
-iOpts.Copula.Type = 'auto';
-% iOpts.Marginals(2).Type = {'Weibull','Gumbel'};
-PosteriorMarginal = uq_createInput(iOpts);
-posteriorSample = uq_getSample(PosteriorMarginal,5000,'lhs');
-%%
-% n_limit = 5000;
-figure
-PosteriorData = iOpts.Inference.Data;
-% extractedFromPosterior = PostSample2D(randi(size(PostSample2D,1),1,n_limit),[1 2]);
-inferredSample = posteriorSample;
-priorSample = exp_design_pce_eval(:,[1 6]);
-subplot_counter = 1;
-for ii = 1:size(PosteriorData,2)
-    for jj = 1:size(PosteriorData,2)
-        if ii == jj % HISTOGRAM PLOT
-            Y = PosteriorData(:,ii);
-            Y_inf = inferredSample(:,ii);
-            Y_prior = priorSample(:,ii);
-            subPlotIdx_diag = diag(reshape( 1:(size(PosteriorData,2)^2),size(PosteriorData,2),size(PosteriorData,2)));
-            subplot(size(PosteriorData,2),size(PosteriorData,2),subPlotIdx_diag(ii))
-            % - Prior Data -
-            % The width of a histogram element is computed by the Scott's rule
-            w = 3.49*std(Y_prior)*numel(Y_prior)^(-1/3);  % Width of a histogram element
-            nBins = max(ceil(range(Y_prior)/w),1);     % Number of histograms
-            [hY,hX] = hist(Y_prior,nBins);
-            [~,idx_max] = max(hY);
-            normfac = 1/(sum(hY*mean(diff(hX))));
-            hY = hY*normfac;
-            plot(hX,hY,'b-')
-            maxProb_var(subplot_counter) = hX(idx_max);
-            hold on
-            % - Posterior Data -
-            % The width of a histogram element is computed by the Scott's rule
-            w = 3.49*std(Y)*numel(Y)^(-1/3);  % Width of a histogram element
-            nBins = max(ceil(range(Y)/w),1);     % Number of histograms
-            [hY,hX] = hist(Y,nBins);
-            [~,idx_max] = max(hY);
-            normfac = 1/(sum(hY*mean(diff(hX))));
-            hY = hY*normfac;
-            plot(hX,hY,'r-')
-            %             xline(maxProb_var(subplot_counter),'k:','LineWidth',1);
-            xlabel(myBayesian_bothModels.Internal.FullPrior.Marginals(ii).Name)
-            % - inferred sample -
-            % The width of a histogram element is computed by the Scott's rule
-            w = 3.49*std(Y_inf)*numel(Y_inf)^(-1/3);  % Width of a histogram element
-            nBins = max(ceil(range(Y_inf)/w),1);     % Number of histograms
-            [hY,hX] = hist(Y_inf,nBins);
-            [~,idx_max] = max(hY);
-            normfac = 1/(sum(hY*mean(diff(hX))));
-            hY = hY*normfac;
-            plot(hX,hY,'k')
-            hold on
-            maxProb_var(subplot_counter) = hX(idx_max);
-            %             xline(maxProb_var(subplot_counter),'k-','LineWidth',1);
-            xlabel(myBayesian_bothModels.Internal.FullPrior.Marginals(ii).Name)
-            xlim([0 max(priorSample(:,ii))])
-            legend('prior','computed posterior','inferred posterior')
-            subplot_counter = subplot_counter + 1;
-        end
-    end
-end
-for ii = 1:size(PosteriorData,2)
-    for jj = 1:size(PosteriorData,2)
-        if jj < ii % SCATTER PLOT
-            Y = PosteriorData(:,[ii jj]);
-            Y_inf = inferredSample(:,[ii jj]);
-            Y_prior = priorSample(:,[ii jj]);
-            Y_extracted = Y_allDim_sample(:,[ii jj]);
-            % - Prior sample -
-            subPlotIdx = reshape( 1:(size(PosteriorData,2)^2),size(PosteriorData,2),size(PosteriorData,2));
-            subplot(size(PosteriorData,2),size(PosteriorData,2),subPlotIdx(jj,ii))
-            scatter(priorSample(:,1), priorSample(:,2), 1, 'b');
-            hold on
-            % - Posterior sample -
-            scatter(PosteriorData(:,1), PosteriorData(:,2), 1, 'r');
-            % - inferred sample -
-            %             scatter(Y_inf(:,1), Y_inf(:,2), [], 'k');
-            % - Posterior sample -
-            scatter(Y_allDim_sample(:,1), Y_allDim_sample(:,2), 1, 'm');
-            xlabel(myBayesian_bothModels.Internal.FullPrior.Marginals(1).Name)
-            ylabel(myBayesian_bothModels.Internal.FullPrior.Marginals(2).Name)
-            subplot_counter = subplot_counter + 1;
-        else % leave blank
-            subplot_counter = subplot_counter + 1;
-        end
-    end
-end
 
+cd(root_destinationC)
+save('_EDforValidationRun2_100_noInference','Y_allDim_sample')
 
 %% save
-cd('M:\IFM\User\melito\PhD\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration_7000\AIES\04_pleaseBeTheLastOne')
-save('_AIES_sim7000_1stRoundCalibration_done_newVersion.mat','-v7.3')
+cd('M:\IFM\User\melito\PhD\Projects\TimeCalibration_storageNoGitHub_saveFiles\Plot_AliModel_Calibration2_7000')
+save('TimeCal2_postCalibration_preValidation.mat','-v7.3')
 cd(root_destinationC)
 
-Y_extracted = Y_allDim_sample;
-
-
-save('_EDforValidationRun_5000_noInference','Y_extracted')
+save('_EDforValidationRun2_100_noInference','Y_allDim_sample')
 
 
 
