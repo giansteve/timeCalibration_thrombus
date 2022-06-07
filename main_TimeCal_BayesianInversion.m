@@ -425,7 +425,7 @@ for kk = 1:2
             patch(patchF, [xi fliplr(xi)], 'r')];
     end
 end
-%% Plot Bayesian results
+%% Plot Bayesian results - Only correlation
 % Copying data int local variables to be used as input for
 % mod_UQLab_plotSeriesPred_2021 in the following
 % myData_bayes = myBayesian_HS(1).Data(1);
@@ -441,32 +441,32 @@ for caseNr = 1:2
             
             figure('Name','H/S')
             subplot_counter = 1;
-            for time_inst = 1:7
+            for time_inst = 2:7
                 
                 PostSample3D = myBayesian_HS(time_inst).Results.PostProc.PostSample;
                 PostSample2D = reshape(permute(PostSample3D, [2 1 3]), size(PostSample3D, 2), []).';
-                subplot(7,3,time_inst)
+                subplot(2,3,time_inst-1)
                 
                 Y_allDim = PostSample2D(randi(size(PostSample2D,1),1,n_limit),1:end-1);
                 for ii = 1:size(Y_allDim,2)
                     for jj = 1:size(Y_allDim,2)
                         if ii == jj % HISTOGRAM PLOT
-                            Y = Y_allDim(:,ii);
-                            subPlotIdx_diag = diag(reshape( 1:(size(Y_allDim,2)^2),size(Y_allDim,2),size(Y_allDim,2)));
-                            subplot(7,3,subplot_counter)
-                            % The width of a histogram element is computed by the Scott's rule
-                            w = 3.49*std(Y)*numel(Y)^(-1/3);  % Width of a histogram element
-                            nBins = max(ceil(range(Y)/w),1);     % Number of histograms
-                            [hY,hX] = hist(Y,nBins);
-                            normfac = 1/(sum(hY*mean(diff(hX))));
-                            hY = hY*normfac;
-                            plot(hX,smooth(hY),'k')
-                            hold on
-                            subplot_counter = subplot_counter + 1;
+%                             Y = Y_allDim(:,ii);
+%                             subPlotIdx_diag = diag(reshape( 1:(size(Y_allDim,2)^2),size(Y_allDim,2),size(Y_allDim,2)));
+%                             subplot(6,2,subplot_counter)
+%                             % The width of a histogram element is computed by the Scott's rule
+%                             w = 3.49*std(Y)*numel(Y)^(-1/3);  % Width of a histogram element
+%                             nBins = max(ceil(range(Y)/w),1);     % Number of histograms
+%                             [hY,hX] = hist(Y,nBins);
+%                             normfac = 1/(sum(hY*mean(diff(hX))));
+%                             hY = hY*normfac;
+%                             plot(hX,smooth(hY),'k')
+%                             hold on
+%                             subplot_counter = subplot_counter + 1;
                         elseif jj > ii % SCATTER PLOT
                             Y = Y_allDim(:,[ii jj]);
 %                             subPlotIdx = reshape( 1:(size(Y_allDim,2)^2),size(Y_allDim,2),size(Y_allDim,2));
-                            subplot(7,3,subplot_counter)
+                            subplot(2,3,subplot_counter)
                             n_bins = 45;
                             Xedges = linspace(min(Y(:,1)),max(Y(:,1)),n_bins + 1); 
                             Yedges = linspace(min(Y(:,2)),max(Y(:,2)),n_bins + 1);
@@ -476,6 +476,14 @@ for caseNr = 1:2
                             [Xv,Yv] = meshgrid(Xbin, Ybin);
                             surf (Xv,Yv,N,'EdgeColor','none');
                             view(2)
+                            textTitle = sprintf('$t^*= %.1f $',((time_inst-1)*5)/30);
+                            title(textTitle)
+                            if time_inst > 4
+                                xlabel(var_names{1})
+                            end
+                            if time_inst == 2 || time_inst == 5
+                                ylabel(var_names{2})
+                            end
 %                             [N,~,~,binX,binY] = histcounts2(Y(:,1), Y(:,2));
 %                             [NX, NY] = size(N);
                             %                             scatter(Y(:,1), Y(:,2), 2,'k','MarkerEdgeAlpha', 0.1);
@@ -490,31 +498,31 @@ for caseNr = 1:2
             
             figure('Name','L/S')
             subplot_counter = 1;
-            for time_inst = 1:7
+            for time_inst = 2:7
                 
                 PostSample3D = myBayesian_LS(time_inst).Results.PostProc.PostSample;
                 PostSample2D = reshape(permute(PostSample3D, [2 1 3]), size(PostSample3D, 2), []).';
-                subplot(7,3,time_inst)
+                subplot(2,3,time_inst-1)
                 
                 Y_allDim = PostSample2D(randi(size(PostSample2D,1),1,n_limit),1:end-1);
                 for ii = 1:size(Y_allDim,2)
                     for jj = 1:size(Y_allDim,2)
                         if ii == jj % HISTOGRAM PLOT
-                            Y = Y_allDim(:,ii);
-                            subPlotIdx_diag = diag(reshape( 1:(size(Y_allDim,2)^2),size(Y_allDim,2),size(Y_allDim,2)));
-                            subplot(7,3,subplot_counter)
-                            % The width of a histogram element is computed by the Scott's rule
-                            w = 3.49*std(Y)*numel(Y)^(-1/3);  % Width of a histogram element
-                            nBins = max(ceil(range(Y)/w),1);     % Number of histograms
-                            [hY,hX] = hist(Y,nBins);
-                            normfac = 1/(sum(hY*mean(diff(hX))));
-                            hY = hY*normfac;
-                            plot(hX,smooth(hY),'k')
-                            subplot_counter = subplot_counter + 1;
+%                             Y = Y_allDim(:,ii);
+%                             subPlotIdx_diag = diag(reshape( 1:(size(Y_allDim,2)^2),size(Y_allDim,2),size(Y_allDim,2)));
+%                             subplot(6,3,subplot_counter)
+%                             % The width of a histogram element is computed by the Scott's rule
+%                             w = 3.49*std(Y)*numel(Y)^(-1/3);  % Width of a histogram element
+%                             nBins = max(ceil(range(Y)/w),1);     % Number of histograms
+%                             [hY,hX] = hist(Y,nBins);
+%                             normfac = 1/(sum(hY*mean(diff(hX))));
+%                             hY = hY*normfac;
+%                             plot(hX,smooth(hY),'k')
+%                             subplot_counter = subplot_counter + 1;
                         elseif jj > ii % SCATTER PLOT
                             Y = Y_allDim(:,[ii jj]);
 %                             subPlotIdx = reshape( 1:(size(Y_allDim,2)^2),size(Y_allDim,2),size(Y_allDim,2));
-                            subplot(7,3,subplot_counter)
+                            subplot(2,3,subplot_counter)
 %                             n_bins = 60;
                             Xedges = linspace(min(Y(:,1)),max(Y(:,1)),n_bins + 1); 
                             Yedges = linspace(min(Y(:,2)),max(Y(:,2)),n_bins + 1);
@@ -524,6 +532,14 @@ for caseNr = 1:2
                             [Xv,Yv] = meshgrid(Xbin, Ybin);
                             surf (Xv,Yv,N,'EdgeColor','none');
                             view(2)
+                            textTitle = sprintf('$t^*= %.1f $',((time_inst-1)*5)/30);
+                            title(textTitle)
+                            if time_inst > 4
+                                xlabel(var_names{1})
+                            end
+                            if time_inst == 2 || time_inst == 5
+                                ylabel(var_names{2})
+                            end
 %                             [NX, NY] = size(N);
 %                                                         scatter(Y(:,1), Y(:,2), 2,'k','MarkerEdgeAlpha', 0.1);
 %                             h = histogram2(Y(:,1), Y(:,2),'DisplayStyle','tile','ShowEmptyBins','on');
@@ -535,8 +551,113 @@ for caseNr = 1:2
     end
 end
 
+%% Plot Bayesian results - only PDFs
+
+for caseNr = 1:2
+%     switch caseNr
+%         case 1 % H/S
+            
+%             figure('Name','H/S')
+            subplot_counter = 1;
+            for time_inst = 2:7
+                
+                PostSample3D = myBayesian_HS(time_inst).Results.PostProc.PostSample;
+                PostSample2D = reshape(permute(PostSample3D, [2 1 3]), size(PostSample3D, 2), []).';
+%                 subplot(1,2,time_inst-1)
+                
+                Y_allDim = PostSample2D(randi(size(PostSample2D,1),1,n_limit),1:end-1);
+                for ii = 1:size(Y_allDim,2)
+%                     for jj = 1:size(Y_allDim,2)
+%                         if ii == jj % HISTOGRAM PLOT
+                            Yhs(:,time_inst-1) = (Y_allDim(:,1));
+                            Yls(:,time_inst-1) = (Y_allDim(:,2));
+%                             Y = Y_allDim(:,ii);
+%                             subPlotIdx_diag = diag(reshape( 1:(size(Y_allDim,2)^2),size(Y_allDim,2),size(Y_allDim,2)));
+%                             subplot(1,2,subplot_counter)
+%                             % The width of a histogram element is computed by the Scott's rule
+%                             w = 3.49*std(Y)*numel(Y)^(-1/3);  % Width of a histogram element
+%                             nBins = max(ceil(range(Y)/w),1);     % Number of histograms
+%                             [hY,hX] = hist(Y,nBins);
+%                             normfac = 1/(sum(hY*mean(diff(hX))));
+%                             hY = hY*normfac;
+%                             plot(hX,smooth(hY),'k')
+%                             GM_pdf_matrix(Y')
+%                             hold on
+%                             subplot_counter = subplot_counter + 1;
+%                         elseif jj > ii % SCATTER PLOT
+%                             Y = Y_allDim(:,[ii jj]);
+% %                             subPlotIdx = reshape( 1:(size(Y_allDim,2)^2),size(Y_allDim,2),size(Y_allDim,2));
+%                             subplot(6,3,subplot_counter)
+%                             n_bins = 45;
+%                             Xedges = linspace(min(Y(:,1)),max(Y(:,1)),n_bins + 1); 
+%                             Yedges = linspace(min(Y(:,2)),max(Y(:,2)),n_bins + 1);
+%                             [N,~,~,binX,binY] = histcounts2(Y(:,1), Y(:,2),Xedges,Yedges,'Normalization','probability');
+%                             Xbin = linspace(min(Xedges),max(Xedges), n_bins);
+%                             Ybin = linspace(min(Yedges),max(Yedges), n_bins);
+%                             [Xv,Yv] = meshgrid(Xbin, Ybin);
+%                             surf (Xv,Yv,N,'EdgeColor','none');
+%                             view(2)
+%                             [N,~,~,binX,binY] = histcounts2(Y(:,1), Y(:,2));
+%                             [NX, NY] = size(N);
+                            %                             scatter(Y(:,1), Y(:,2), 2,'k','MarkerEdgeAlpha', 0.1);
+%                             h = histogram2(Y(:,1), Y(:,2),'DisplayStyle','tile','ShowEmptyBins','on');
+%                             subplot_counter = subplot_counter + 1;
+%                         end
+%                     end
+                end
+            end
+            
+%         case 2 % L/S
+%             
+%             figure('Name','L/S')
+%             subplot_counter = 1;
+%             for time_inst = 2:7
+%                 
+%                 PostSample3D = myBayesian_LS(time_inst).Results.PostProc.PostSample;
+%                 PostSample2D = reshape(permute(PostSample3D, [2 1 3]), size(PostSample3D, 2), []).';
+%                 subplot(6,3,time_inst)
+%                 
+%                 Y_allDim = PostSample2D(randi(size(PostSample2D,1),1,n_limit),1:end-1);
+%                 for ii = 1:size(Y_allDim,2)
+%                     for jj = 1:size(Y_allDim,2)
+%                         if ii == jj % HISTOGRAM PLOT
+%                             Y = Y_allDim(:,ii);
+%                             subPlotIdx_diag = diag(reshape( 1:(size(Y_allDim,2)^2),size(Y_allDim,2),size(Y_allDim,2)));
+%                             subplot(6,3,subplot_counter)
+%                             % The width of a histogram element is computed by the Scott's rule
+%                             w = 3.49*std(Y)*numel(Y)^(-1/3);  % Width of a histogram element
+%                             nBins = max(ceil(range(Y)/w),1);     % Number of histograms
+%                             [hY,hX] = hist(Y,nBins);
+%                             normfac = 1/(sum(hY*mean(diff(hX))));
+%                             hY = hY*normfac;
+%                             plot(hX,smooth(hY),'k')
+%                             subplot_counter = subplot_counter + 1;
+%                         elseif jj > ii % SCATTER PLOT
+%                             Y = Y_allDim(:,[ii jj]);
+% %                             subPlotIdx = reshape( 1:(size(Y_allDim,2)^2),size(Y_allDim,2),size(Y_allDim,2));
+%                             subplot(6,3,subplot_counter)
+% %                             n_bins = 60;
+%                             Xedges = linspace(min(Y(:,1)),max(Y(:,1)),n_bins + 1); 
+%                             Yedges = linspace(min(Y(:,2)),max(Y(:,2)),n_bins + 1);
+%                             [N,~,~,binX,binY] = histcounts2(Y(:,1), Y(:,2),Xedges,Yedges,'Normalization','probability');
+%                             Xbin = linspace(min(Xedges),max(Xedges), n_bins);
+%                             Ybin = linspace(min(Yedges),max(Yedges), n_bins);
+%                             [Xv,Yv] = meshgrid(Xbin, Ybin);
+%                             surf (Xv,Yv,N,'EdgeColor','none');
+%                             view(2)
+% %                             [NX, NY] = size(N);
+% %                                                         scatter(Y(:,1), Y(:,2), 2,'k','MarkerEdgeAlpha', 0.1);
+% %                             h = histogram2(Y(:,1), Y(:,2),'DisplayStyle','tile','ShowEmptyBins','on');
+%                             subplot_counter = subplot_counter + 1;
+%                         end
+%                     end
+%                 end
+%             end
+%     end
+end
+
 %% Plot Bayesian results 2
-n_limit = 100000;
+% n_limit = 100000;
 
 for caseNr = 1:2
     switch caseNr
@@ -563,7 +684,13 @@ for caseNr = 1:2
                             [hY,hX] = hist(Y,nBins);
                             normfac = 1/(sum(hY*mean(diff(hX))));
                             hY = hY*normfac;
-                            plot(hX,smooth(hY),'Color',[1 1-time_inst/7 1-time_inst/7])
+%                             plot(hX,smooth(hY),'Color',[1 1-time_inst/7 1-time_inst/7])
+%                             plot(hX,smooth(hY))
+                            N_edges = 100;
+                            edges_hist = linspace(min(min(Y)),max(max(Y)),N_edges);
+                            centres = edges_hist(1:end-1)+ diff(edges_hist)/2;
+                            h = histcounts(Y,edges_hist,'Normalization','probability');
+                            plot(centres,smooth(smooth(h)),'Color',[1-time_inst/7 0 0],'LineWidth',time_inst/7+0.3)
                             hold on
 %                             subplot_counter = subplot_counter + 1;
                         end
@@ -593,7 +720,13 @@ for caseNr = 1:2
                             [hY,hX] = hist(Y,nBins);
                             normfac = 1/(sum(hY*mean(diff(hX))));
                             hY = hY*normfac;
-                            plot(hX,smooth(hY),'Color',[1-time_inst/7 1-time_inst/7 1])
+%                             plot(hX,smooth(hY),'Color',[1-time_inst/7 1-time_inst/7 1])
+                            N_edges = 100;
+                            edges_hist = linspace(min(min(Y)),max(max(Y)),N_edges);
+                            centres = edges_hist(1:end-1)+ diff(edges_hist)/2;
+                            h = histcounts(Y,edges_hist,'Normalization','probability');
+                            plot(centres,smooth(smooth(h)),'Color',[1-time_inst/7 0 0],'LineWidth',time_inst/7+0.3)
+                            hold on
                             hold on
 %                             subplot_counter = subplot_counter + 1;
                         end
@@ -602,8 +735,21 @@ for caseNr = 1:2
             end
     end
 end
-
-
+subplot(221)
+title('$H/S$')
+ylabel('$p(D_\mathrm{c})$')
+xlabel('$D_\mathrm{c}$')
+subplot(222)
+title('$L/S$')
+ylabel('$p(D_\mathrm{c})$')
+xlabel('$D_\mathrm{c}$')
+subplot(223)
+ylabel('$p(\langle \dot{\gamma}\rangle)$')
+xlabel('$\langle \dot{\gamma}\rangle$')
+subplot(224)
+ylabel('$p(\langle \dot{\gamma}\rangle)$')
+xlabel('$\langle \dot{\gamma}\rangle$')
+GM_printBMP(500,300,'VaryingPDFs')
 %% fit posterior
 [fitData.ff_postDcGam,fitData.gof_postDcGam] = fit(Y_allDim(:,1),Y_allDim(:,2),'exp2');
 % random select element of Y_allDim
