@@ -148,12 +148,26 @@ histogram(phic_LS_threshold(MRI_time(2),:))
 % histogram(phic_LS_threshold(7,:))
 
 %%
+[M,I] = (max(phic_LS_threshold(end,:)));
+phic_HS_threshold_rmout = phic_HS_threshold;
+phic_LS_threshold_rmout = phic_LS_threshold;
+phic_HS_threshold_rmout(:,I) = [];
+phic_LS_threshold_rmout(:,I) = [];
 figure
-plot(linspace(0,1,61),phic_LS_threshold)
+subplot(211)
+plot(linspace(0,1,61),phic_HS_threshold_rmout,'Color',[0.5 .5 .5])
 hold on
-plot(linspace(0,1,7),human_thr.L_S(:,1),'r.','MarkerSize',10)
-
-
+plot(linspace(0,1,7),human_thr.H_S(:,1),'k.','MarkerSize',10)
+errorbar(linspace(0,1,7),human_thr.H_S(:,1),human_thr.H_S(:,2),human_thr.H_S(:,2),'LineStyle','none','Marker','none','Color','k')
+ylabel('$H/S$')
+subplot(212)
+plot(linspace(0,1,61),phic_LS_threshold_rmout,'Color',[0.5 .5 .5])
+hold on
+plot(linspace(0,1,7),human_thr.L_S(:,1),'k.','MarkerSize',10)
+errorbar(linspace(0,1,7),human_thr.L_S(:,1),human_thr.L_S(:,2),human_thr.L_S(:,2),'LineStyle','none','Marker','none','Color','k')
+ylabel('$L/S$')
+xlabel('$t^*$ (-)')
+GM_printBMP(500,300,'BiforcationOutput')
 %%
 [r,c] = find(phic_LS_threshold(end,:)<4.3);
 firstGroupLS = phic_LS_threshold(MRI_time,c);
